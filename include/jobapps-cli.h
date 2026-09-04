@@ -4,5 +4,9 @@
 
 char jacli_menu();
 void jacli_add_company(const char * companyName);
+void jacli_help();
+
+void jacli_setup();
+void jacli_close();
 
 #endif

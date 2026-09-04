@@ -1,10 +1,30 @@
-#include <mysql.h>
-#include <stdio.h> //printf, scanf, fgets
-#include <stdlib.h> //getenv
-#include "jobapps-cli.h"
+/* jobapps-cli.c
+ * PURPOSE:
+ * - Print out usage instructions and accept input from user.
+ * - Redirect user input to appropriate database function
+*/
 
-int main() {
-	char option = jacli_menu();
+#include <stdio.h>
+#include "jobapps-cli.h"
+#include "db.h"
+
+void jacli_setup() {
+	db_open();
+}
+
+char jacli_menu() {
+	// MENU START INFO
+	printf("OPTIONS:\n");
+	printf("--------\n");
+	printf("1. Add company\n");
+	printf("h. usage help\n");
+
+	// REQUEST USER INPUT
+	char option;
+	scanf("%c", &option);
+	printf("User option: %c\n", option);
+
+	// MENU LOGIC
 	if (option == '1') {
 		char companyName[50];
 		printf("Type company name to add:\n");
@@ -13,32 +33,20 @@ int main() {
 		jacli_add_company(companyName);
 	}
 	else if (option == 'h') {
-		printf("You reached the help page\n");
+		jacli_help();
 	}
-
-	return 0;
-}
-
-char jacli_menu() {
-	printf("<<< jobapps-cli >>>\n");
-	printf("For help type: h.\n");
-
-	printf("OPTIONS:\n");
-	printf("1. Add company\n");
-
-	/*
-	char input[50];
-	fgets(input, sizeof(input), stdin); //include the '\n'
-	printf("Your input: %s\n", input);
-	*/
-
-	char option;
-	scanf("%c", &option);
-	printf("User option: %c\n", option);
 
 	return option;
 }
 
-void jacli_add_company(const char * companyName) {
+void jacli_help() {
+	printf("You reached the help page\n");
+}
 
+void jacli_add_company(const char * companyName) {
+	db_insert_company(companyName);
+}
+
+void jacli_close() {
+	db_close();
 }

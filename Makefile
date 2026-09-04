@@ -5,17 +5,15 @@ MYSQL_INCLUDE_PATH = /opt/homebrew/Cellar/mysql/26.7.0/include/mysql/ # I was go
 MYSQL_LIB_PATH = /opt/homebrew/Cellar/mysql/26.7.0/lib/
 
 INCLUDE_PATH = ./include/
+SRC = src/main.c src/jobapps-cli.c src/db.c
 
 all: main
 
-main: src/jobapps-cli.c
-	gcc src/jobapps-cli.c -I$(INCLUDE_PATH) -I$(MYSQL_INCLUDE_PATH) -L$(MYSQL_LIB_PATH) -lmysqlclient -o build/jacli
+main: src/main.c
+	gcc $(SRC) -I$(INCLUDE_PATH) -I$(MYSQL_INCLUDE_PATH) -L$(MYSQL_LIB_PATH) -lmysqlclient -o build/jacli
 
 debug: src/jobapps-cli.c
-	gcc -g src/jobapps-cli.c -I$(INCLUDE_PATH) -I$(MYSQL_INCLUDE_PATH) -L$(MYSQL_LIB_PATH) -lmysqlclient -o build/jacli
-
-# jacli: src/jobapps-cli.c
-#	gcc src/jobapps-cli.c -o build/jacli -Iinclude
+	gcc -g $(SRC) -I$(INCLUDE_PATH) -I$(MYSQL_INCLUDE_PATH) -L$(MYSQL_LIB_PATH) -lmysqlclient -o build/jacli
 
 clean:
 	rm build/jobapps-cli

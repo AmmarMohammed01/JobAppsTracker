@@ -1,8 +1,11 @@
 #include <mysql.h>
+#include <stdbool.h> //bool
 #include <stdlib.h> //getenv
 #include <stdio.h> //fprintf
+#include <string.h> //strlen
 
 #include "db.h"
+#include "field_types.h"
 
 static MYSQL * mysql = NULL; //this var isn't visible outside file = static
 
@@ -35,6 +38,7 @@ void db_open() {
 	   )//page 91 - 95
 	{
 		fprintf(stderr, "Failed to connect to database: Error: %s\n", mysql_error(mysql));
+		printf("host: %s\n", host);
 		//return 2;
 		exit(1);
 	}
@@ -54,25 +58,107 @@ void db_close() {
 
 void db_select_company(const char * companyName) {
 	//SELECT * FROM company WHERE company_name = "$(companyName)";
-	/*
-	mysql_stmt_init();
 
-	mysql_stmt_prepare();
-	mysql_stmt_bind_param();
+	int status;
 
-	mysql_stmt_execute();
+	MYSQL_STMT * preparedStatement = mysql_stmt_init(mysql);
+	const char *stmt_str = "SELECT company_id FROM company WHERE company_name = ?";
+	//const char *stmt_str = "SELECT platform_id FROM platform WHERE platform_name = ?";
+	unsigned long length = strlen(stmt_str);
 
-	mysql_stmt_result_metadata(); //for SELECT
+	//prepare and bind before execution
+	if(mysql_stmt_prepare(preparedStatement, stmt_str, length)) { //success = 0
+		fprintf(stderr, "Error in preparing statement!\n");
+	}
+
+	//MYSQL_BIND * bind;
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	//char str_data[50];
+	unsigned long str_length = strlen(companyName);
+	/* STRING PARAM */
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (char *)companyName; // (char *)str_data
+	bind[0].buffer_length = 50;
+	bind[0].is_null = 0;
+	bind[0].length = &str_length;
+
+	//mysql_stmt_bind_named_param(preparedStatement, bind, 1, NULL); //page 137 example
+	if ( mysql_stmt_bind_param(preparedStatement, bind) ) {
+		fprintf(stderr, "BINDING FAILED\n");
+		fprintf(stderr, "ERROR MESSAGE: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		exit(1);
+	}
+
+	if( (status = mysql_stmt_execute(preparedStatement)) ) {
+		fprintf(stderr, "Error in statement execution.\n");
+		fprintf(stderr, "Status: %d\n", status);
+		fprintf(stderr, "ERROR MESSAGE: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		mysql_close(mysql);
+		exit(1);
+	}
+
+	MYSQL_RES * result = mysql_stmt_result_metadata(preparedStatement); //for SELECT
 	
-	mysql_stmt_fetch(); //call repeatedly until all rows fetched
+	//printf("%s\n", result->fields->name); //OUTPUT: company_id
+	
+	int companyId;
+	bool isNull = 0;
+	bool error = 0;
+	unsigned long resultLength = 0;
 
-	mysql_free_result(); // b/c stmt_result_metadata
+	MYSQL_BIND bindResult[1];
+	memset(bindResult, 0, sizeof(bindResult));
+	bindResult[0].buffer_type = MYSQL_TYPE_LONG;
+	bindResult[0].buffer = (char *)&companyId;
+	bindResult[0].is_null = &isNull;
+	bindResult[0].length = &resultLength;
+	bindResult[0].error = &error;
 
-	mysql_stmt_close(); // b/c stmt_init
+	if( mysql_stmt_bind_result(preparedStatement, bindResult) != 0) {
+		fprintf(stderr, "Result bind failed: %s\n",
+		mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		exit(1);
+	}
+
+	/*
+	while(1) {
+		status = mysql_stmt_fetch(preparedStatement); //call repeatedly until all rows fetched
+		if (status == 1 || status == MYSQL_NO_DATA) {
+			printf("No data left\n");
+			break;
+		}
+
+		fprintf(stdout, "Column 1 (company_id): ");
+		if(isNull) {
+			fprintf(stdout, "NULL\n");
+		}
+		else {
+			fprintf(stdout, "%d\n", companyId);
+		}
+
+	}
 	*/
+	//handle empty values, no results found
+	while ((mysql_stmt_fetch(preparedStatement)) == 0) {
+		if (isNull) {
+		    printf("company_id: NULL\n");
+		} else {
+		    printf("company_id: %d\n", companyId);
+		}
+	}
+
+	mysql_free_result(result); // b/c stmt_result_metadata
+
+	mysql_stmt_close(preparedStatement); // b/c stmt_init
 }
 
 void db_insert_company(const char * companyName) {
-	//INSERT INTO company (company_name) VALUES ("$(comapnyName)");
+	//INSERT INTO company (company_name) VALUES (?);
+	const char * insert_stmt = "INSERT INTO company (company_name) VALUES (?);";
 
 }

@@ -5,6 +5,7 @@
 */
 
 #include <stdio.h>
+#include <string.h> //strcspn
 #include "jobapps-cli.h"
 #include "db.h"
 
@@ -20,23 +21,24 @@ char jacli_menu() {
 	printf("h. usage help\n");
 
 	// REQUEST USER INPUT
-	char option;
-	scanf("%c", &option);
-	printf("User option: %c\n", option);
+	char option[10];
+	//scanf("%c", &option);
+	fgets(option, sizeof(option), stdin);
+	printf("User option: %s\n", option);
 
 	// MENU LOGIC
-	if (option == '1') {
+	if (option[0] == '1') {
 		char companyName[50];
 		printf("Type company name to add:\n");
 		fgets(companyName, sizeof(companyName), stdin);
-
+		companyName[strcspn(companyName, "\r\n")] = '\0'; //newline added by fgets can cause problems searching for value
 		jacli_add_company(companyName);
 	}
-	else if (option == 'h') {
+	else if (option[0] == 'h') {
 		jacli_help();
 	}
 
-	return option;
+	return option[0];
 }
 
 void jacli_help() {
@@ -44,7 +46,8 @@ void jacli_help() {
 }
 
 void jacli_add_company(const char * companyName) {
-	db_insert_company(companyName);
+	db_select_company(companyName);
+	//db_insert_company(companyName);
 }
 
 void jacli_close() {

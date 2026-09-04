@@ -24,3 +24,14 @@ make # produces my_client
 ```bash
 ./run_client.bash
 ```
+
+## For running debug
+
+Go to project root.
+
+```bash
+set -a
+. ./.env
+set +a
+lldb build/jacli
+```

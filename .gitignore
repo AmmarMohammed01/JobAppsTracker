@@ -1,4 +1,6 @@
 .env
-*.drawio
-resources.txt
-my_client
+# *.drawio
+# resources.txt
+
+documentation
+build

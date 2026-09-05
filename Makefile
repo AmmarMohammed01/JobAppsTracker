@@ -16,8 +16,8 @@ debug: src/jobapps-cli.c
 	gcc -g $(SRC) -I$(INCLUDE_PATH) -I$(MYSQL_INCLUDE_PATH) -L$(MYSQL_LIB_PATH) -lmysqlclient -o build/jacli
 
 clean:
-	rm build/jobapps-cli
+	rm build/jacli
 
 clean-d:
-	rm build/jobapps-cli
-	rm -rf build/jobapps-cli.dSYM
+	rm build/jacli
+	rm -rf build/jacli.dSYM

@@ -56,26 +56,27 @@ void db_close() {
 	mysql_library_end();
 }
 
-void db_select_company(const char * companyName) {
+// RETURN ID, else 0 for ERROR
+int db_select_company(const char * companyName) {
 	//SELECT * FROM company WHERE company_name = "$(companyName)";
 
-	int status;
+	int return_status;
 
 	MYSQL_STMT * preparedStatement = mysql_stmt_init(mysql);
 	const char *stmt_str = "SELECT company_id FROM company WHERE company_name = ?";
-	//const char *stmt_str = "SELECT platform_id FROM platform WHERE platform_name = ?";
-	unsigned long length = strlen(stmt_str);
+	unsigned long length = strlen(stmt_str); // NOTE: what is the value of the string <-- the value hasn't been prepared yet...
 
 	//prepare and bind before execution
 	if(mysql_stmt_prepare(preparedStatement, stmt_str, length)) { //success = 0
-		fprintf(stderr, "Error in preparing statement!\n");
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		mysql_close(mysql);
+		return 1;
 	}
 
-	//MYSQL_BIND * bind;
 	MYSQL_BIND bind[1];
 	memset(bind, 0, sizeof(bind));
 
-	//char str_data[50];
 	unsigned long str_length = strlen(companyName);
 	/* STRING PARAM */
 	bind[0].buffer_type = MYSQL_TYPE_STRING;
@@ -84,28 +85,23 @@ void db_select_company(const char * companyName) {
 	bind[0].is_null = 0;
 	bind[0].length = &str_length;
 
-	//mysql_stmt_bind_named_param(preparedStatement, bind, 1, NULL); //page 137 example
 	if ( mysql_stmt_bind_param(preparedStatement, bind) ) {
-		fprintf(stderr, "BINDING FAILED\n");
-		fprintf(stderr, "ERROR MESSAGE: %s\n", mysql_stmt_error(preparedStatement));
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
 		mysql_stmt_close(preparedStatement);
-		exit(1);
+		return 1;
 	}
 
-	if( (status = mysql_stmt_execute(preparedStatement)) ) {
-		fprintf(stderr, "Error in statement execution.\n");
-		fprintf(stderr, "Status: %d\n", status);
-		fprintf(stderr, "ERROR MESSAGE: %s\n", mysql_stmt_error(preparedStatement));
+	if( (return_status = mysql_stmt_execute(preparedStatement)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
+		fprintf(stderr, "Return Status: %d\n", return_status);
 		mysql_stmt_close(preparedStatement);
 		mysql_close(mysql);
-		exit(1);
+		return 1;
 	}
 
 	MYSQL_RES * result = mysql_stmt_result_metadata(preparedStatement); //for SELECT
 	
-	//printf("%s\n", result->fields->name); //OUTPUT: company_id
-	
-	int companyId;
+	int companyId = -1;
 	bool isNull = 0;
 	bool error = 0;
 	unsigned long resultLength = 0;
@@ -119,32 +115,19 @@ void db_select_company(const char * companyName) {
 	bindResult[0].error = &error;
 
 	if( mysql_stmt_bind_result(preparedStatement, bindResult) != 0) {
-		fprintf(stderr, "Result bind failed: %s\n",
-		mysql_stmt_error(preparedStatement));
+		fprintf(stderr, "Result bind failed: %s\n", mysql_stmt_error(preparedStatement));
 		mysql_stmt_close(preparedStatement);
-		exit(1);
+		mysql_close(mysql);
+		return 1;
 	}
 
-	/*
-	while(1) {
-		status = mysql_stmt_fetch(preparedStatement); //call repeatedly until all rows fetched
-		if (status == 1 || status == MYSQL_NO_DATA) {
+	//handle empty values, no results found
+	while ((return_status = mysql_stmt_fetch(preparedStatement)) == 0) {
+		if (return_status == 1 || return_status == MYSQL_NO_DATA) {
 			printf("No data left\n");
 			break;
 		}
 
-		fprintf(stdout, "Column 1 (company_id): ");
-		if(isNull) {
-			fprintf(stdout, "NULL\n");
-		}
-		else {
-			fprintf(stdout, "%d\n", companyId);
-		}
-
-	}
-	*/
-	//handle empty values, no results found
-	while ((mysql_stmt_fetch(preparedStatement)) == 0) {
 		if (isNull) {
 		    printf("company_id: NULL\n");
 		} else {
@@ -155,6 +138,8 @@ void db_select_company(const char * companyName) {
 	mysql_free_result(result); // b/c stmt_result_metadata
 
 	mysql_stmt_close(preparedStatement); // b/c stmt_init
+
+	return companyId;
 }
 
 void db_insert_company(const char * companyName) {

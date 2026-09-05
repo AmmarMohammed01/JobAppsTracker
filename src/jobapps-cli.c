@@ -9,15 +9,21 @@
 #include "jobapps-cli.h"
 #include "db.h"
 
+//private declarations. file-scope.
+static void jacli_add_job_listing();
+static void jacli_add_company();
+static void jacli_help();
+
 void jacli_setup() {
 	db_open();
 }
 
-char jacli_menu() {
+void jacli_menu() {
 	// MENU START INFO
 	printf("OPTIONS:\n");
 	printf("--------\n");
-	printf("1. Add company\n");
+	printf("1. Add job listing\n");
+	printf("2. Add company\n");
 	printf("h. usage help\n");
 
 	// REQUEST USER INPUT
@@ -27,26 +33,55 @@ char jacli_menu() {
 	printf("User option: %s\n", option);
 
 	// MENU LOGIC
-	if (option[0] == '1') {
-		char companyName[50];
-		printf("Type company name to add:\n");
-		fgets(companyName, sizeof(companyName), stdin);
-		companyName[strcspn(companyName, "\r\n")] = '\0'; //newline added by fgets can cause problems searching for value
-		jacli_add_company(companyName);
+	if (option[0] == '1') { //add job listing
+		jacli_add_job_listing();
 	}
-	else if (option[0] == 'h') {
+	else if (option[0] == '2') { // add company
+		jacli_add_company();
+	}
+	else if (option[0] == 'h') { //help
 		jacli_help();
 	}
-
-	return option[0];
 }
 
-void jacli_help() {
+static void jacli_help() {
 	printf("You reached the help page\n");
 }
 
-void jacli_add_company(const char * companyName) {
-	db_select_company(companyName);
+static void jacli_add_job_listing() {
+	char user_input[100];
+	printf("Type company name, platform name, job title:\n");
+	fgets(user_input, sizeof(user_input), stdin);
+
+	user_input[strcspn(user_input, "\r\n")] = '\0';
+
+	//perhaps parsing should happen in here.
+
+	//search if company_name is in databse, get company_id
+	//search if platform_name is in database, get platform_id
+	//send query to database with "company_id, platform_id, and job_title"
+
+	int return_status;
+}
+
+static void jacli_add_company() {
+	// Get input
+	char companyName[50];
+	printf("Type company name to add:\n");
+	fgets(companyName, sizeof(companyName), stdin);
+
+	// Prepare input
+	companyName[strcspn(companyName, "\r\n")] = '\0'; //newline added by fgets can cause problems searching for value
+
+	// Send input to see if exists
+	int companyId = db_select_company(companyName);
+	if (companyId == -1) {
+		fprintf(stderr, "JACLI: Company ID for '%s' does not exist in database.\n", companyName);
+	}
+	else {
+		printf("JACLI: Found Company ID: %d\n", companyId);
+	}
+
 	//db_insert_company(companyName);
 }
 

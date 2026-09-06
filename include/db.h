@@ -5,6 +5,6 @@
 void db_open();
 void db_close();
 int db_select_company(const char * companyName);
-void db_insert_company(const char * companyName);
+unsigned long long db_insert_company(const char * companyName);
 
 #endif

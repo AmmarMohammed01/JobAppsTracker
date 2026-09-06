@@ -41,5 +41,6 @@ I created the databse in mysql homebrew installation.
 
 To obtain schema, I ran this command:
 ```bash
-mysql -u [username] -p jobapps > jobapps.sql
+# mysqldump -u [username] -p jobapps > jobapps.sql
+mysqldump -u [username] -p --no-data jobapps > jobapps.sql
 ```

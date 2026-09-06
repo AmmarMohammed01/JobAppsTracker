@@ -21,7 +21,7 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'd841ee3a-a588-11f1-94a1-611e72e219d2:1-12';
+SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'd841ee3a-a588-11f1-94a1-611e72e219d2:1-20';
 
 --
 -- Table structure for table `company`
@@ -33,18 +33,10 @@ DROP TABLE IF EXISTS `company`;
 CREATE TABLE `company` (
   `company_id` int NOT NULL AUTO_INCREMENT,
   `company_name` varchar(100) NOT NULL,
-  PRIMARY KEY (`company_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`company_id`),
+  UNIQUE KEY `unique_company_name` (`company_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `company`
---
-
-LOCK TABLES `company` WRITE;
-/*!40000 ALTER TABLE `company` DISABLE KEYS */;
-/*!40000 ALTER TABLE `company` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `job_link`
@@ -62,15 +54,6 @@ CREATE TABLE `job_link` (
   CONSTRAINT `job_link_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `job_listing` (`job_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `job_link`
---
-
-LOCK TABLES `job_link` WRITE;
-/*!40000 ALTER TABLE `job_link` DISABLE KEYS */;
-/*!40000 ALTER TABLE `job_link` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `job_listing`
@@ -93,15 +76,6 @@ CREATE TABLE `job_listing` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `job_listing`
---
-
-LOCK TABLES `job_listing` WRITE;
-/*!40000 ALTER TABLE `job_listing` DISABLE KEYS */;
-/*!40000 ALTER TABLE `job_listing` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `job_status`
 --
 
@@ -118,15 +92,6 @@ CREATE TABLE `job_status` (
   CONSTRAINT `job_status_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `job_listing` (`job_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `job_status`
---
-
-LOCK TABLES `job_status` WRITE;
-/*!40000 ALTER TABLE `job_status` DISABLE KEYS */;
-/*!40000 ALTER TABLE `job_status` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `login`
@@ -147,15 +112,6 @@ CREATE TABLE `login` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `login`
---
-
-LOCK TABLES `login` WRITE;
-/*!40000 ALTER TABLE `login` DISABLE KEYS */;
-/*!40000 ALTER TABLE `login` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `platform`
 --
 
@@ -165,19 +121,10 @@ DROP TABLE IF EXISTS `platform`;
 CREATE TABLE `platform` (
   `platform_id` int NOT NULL AUTO_INCREMENT,
   `platform_name` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`platform_id`)
+  PRIMARY KEY (`platform_id`),
+  UNIQUE KEY `unique_platform_name` (`platform_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `platform`
---
-
-LOCK TABLES `platform` WRITE;
-/*!40000 ALTER TABLE `platform` DISABLE KEYS */;
-INSERT INTO `platform` VALUES (1,'LinkedIn'),(2,'Indeed');
-/*!40000 ALTER TABLE `platform` ENABLE KEYS */;
-UNLOCK TABLES;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -189,4 +136,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-04 13:50:54
+-- Dump completed on 2026-09-06 15:48:29

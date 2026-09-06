@@ -142,8 +142,49 @@ int db_select_company(const char * companyName) {
 	return companyId;
 }
 
-void db_insert_company(const char * companyName) {
-	//INSERT INTO company (company_name) VALUES (?);
-	const char * insert_stmt = "INSERT INTO company (company_name) VALUES (?);";
+unsigned long long db_insert_company(const char * companyName) {
+	//int insert_complete = 0; //1 if complete
 
+	//INSERT INTO company (company_name) VALUES (?);
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "INSERT INTO company (company_name) VALUES (?);";
+	unsigned long length = strlen(stmt_string);
+	
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return 1;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long param_str_length = strlen(companyName);
+	/* STRING PARAM */
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (char *)companyName; // (char *)str_data
+	bind[0].buffer_length = 50;
+	bind[0].is_null = 0;
+	bind[0].length = &param_str_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return 1;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return 1;
+	}
+
+	unsigned long long affectedRows = mysql_stmt_affected_rows(stmt_handler); //same as uint64_t
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	//return insert_complete;
+	return affectedRows;
 }

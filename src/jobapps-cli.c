@@ -77,12 +77,13 @@ static void jacli_add_company() {
 	int companyId = db_select_company(companyName);
 	if (companyId == -1) {
 		fprintf(stderr, "JACLI: Company ID for '%s' does not exist in database.\n", companyName);
+		unsigned long long affectedRows = db_insert_company(companyName);
+		printf("%llu company added.\n", affectedRows);
 	}
 	else {
 		printf("JACLI: Found Company ID: %d\n", companyId);
 	}
 
-	//db_insert_company(companyName);
 }
 
 void jacli_close() {

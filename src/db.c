@@ -188,3 +188,132 @@ unsigned long long db_insert_company(const char * companyName) {
 	//return insert_complete;
 	return affectedRows;
 }
+
+
+int db_select_platform(const char * platformName) {
+	//SELECT * FROM platform WHERE platform_name = "$(platformName)";
+
+	int return_status;
+
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "SELECT platform_id FROM platform WHERE platform_name = ?";
+	unsigned long length = strlen(stmt_string); // NOTE: what is the value of the string <-- the value hasn't been prepared yet...
+
+	//prepare and bind before execution
+	if(mysql_stmt_prepare(stmt_handler, stmt_string, length)) { //success = 0
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return 1;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long param_str_length = strlen(platformName);
+	/* STRING PARAM */
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (char *)platformName; // (char *)str_data
+	bind[0].buffer_length = 50;
+	bind[0].is_null = 0;
+	bind[0].length = &param_str_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return 1;
+	}
+
+	if( (return_status = mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		fprintf(stderr, "Return Status: %d\n", return_status);
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return 1;
+	}
+
+	MYSQL_RES * result = mysql_stmt_result_metadata(stmt_handler); //for SELECT
+	
+	int platformId = -1;
+	bool isNull = 0;
+	bool error = 0;
+	unsigned long resultLength = 0;
+
+	MYSQL_BIND bindResult[1];
+	memset(bindResult, 0, sizeof(bindResult));
+	bindResult[0].buffer_type = MYSQL_TYPE_LONG;
+	bindResult[0].buffer = (char *)&platformId;
+	bindResult[0].is_null = &isNull;
+	bindResult[0].length = &resultLength;
+	bindResult[0].error = &error;
+
+	if( mysql_stmt_bind_result(stmt_handler, bindResult) != 0) {
+		fprintf(stderr, "Result bind failed: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return 1;
+	}
+
+	//handle empty values, no results found
+	while ((return_status = mysql_stmt_fetch(stmt_handler)) == 0) {
+		if (return_status == 1 || return_status == MYSQL_NO_DATA) {
+			printf("No data left\n");
+			break;
+		}
+
+		if (isNull) {
+		    printf("platform_id: NULL\n");
+		} else {
+		    printf("platform_id: %d\n", platformId);
+		}
+	}
+
+	mysql_free_result(result); // b/c stmt_result_metadata
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return platformId;
+}
+
+unsigned long long db_insert_platform(const char * platformName) {
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "INSERT INTO platform (platform_name) VALUES (?);";
+	unsigned long length = strlen(stmt_string);
+	
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return 1;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long param_str_length = strlen(platformName);
+	/* STRING PARAM */
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (char *)platformName; // (char *)str_data
+	bind[0].buffer_length = 50;
+	bind[0].is_null = 0;
+	bind[0].length = &param_str_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return 1;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return 1;
+	}
+
+	unsigned long long affectedRows = mysql_stmt_affected_rows(stmt_handler); //same as uint64_t
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return affectedRows;
+}

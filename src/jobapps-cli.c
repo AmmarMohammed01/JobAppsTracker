@@ -12,6 +12,7 @@
 //private declarations. file-scope.
 static void jacli_add_job_listing();
 static void jacli_add_company();
+static void jacli_add_platform();
 static void jacli_help();
 
 void jacli_setup() {
@@ -24,6 +25,7 @@ void jacli_menu() {
 	printf("--------\n");
 	printf("1. Add job listing\n");
 	printf("2. Add company\n");
+	printf("3. Add platform\n");
 	printf("h. usage help\n");
 
 	// REQUEST USER INPUT
@@ -38,6 +40,9 @@ void jacli_menu() {
 	}
 	else if (option[0] == '2') { // add company
 		jacli_add_company();
+	}
+	else if (option[0] == '3') { // add company
+		jacli_add_platform();
 	}
 	else if (option[0] == 'h') { //help
 		jacli_help();
@@ -82,6 +87,28 @@ static void jacli_add_company() {
 	}
 	else {
 		printf("JACLI: Found Company ID: %d\n", companyId);
+	}
+
+}
+
+static void jacli_add_platform() {
+	// Get input
+	char platformName[50];
+	printf("Type platform name to add:\n");
+	fgets(platformName, sizeof(platformName), stdin);
+
+	// Prepare input
+	platformName[strcspn(platformName, "\r\n")] = '\0'; //newline added by fgets can cause problems searching for value
+
+	// Send input to see if exists
+	int platformId = db_select_platform(platformName);
+	if (platformId == -1) {
+		fprintf(stderr, "JACLI: Platform ID for '%s' does not exist in database.\n", platformName);
+		unsigned long long affectedRows = db_insert_platform(platformName);
+		printf("%llu platform added.\n", affectedRows);
+	}
+	else {
+		printf("JACLI: Found Platform ID: %d\n", platformId);
 	}
 
 }

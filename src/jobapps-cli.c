@@ -13,6 +13,9 @@
 static void jacli_add_job_listing();
 static void jacli_add_company();
 static void jacli_add_platform();
+//static void jacli_info(); //relevant info
+static void jacli_list_companies();
+static void jacli_list_platforms();
 static void jacli_help();
 
 void jacli_setup() {
@@ -26,6 +29,8 @@ void jacli_menu() {
 	printf("1. Add job listing\n");
 	printf("2. Add company\n");
 	printf("3. Add platform\n");
+	printf("4. List all companies\n");
+	printf("5. List all platforms\n");
 	printf("h. usage help\n");
 
 	// REQUEST USER INPUT
@@ -41,8 +46,14 @@ void jacli_menu() {
 	else if (option[0] == '2') { // add company
 		jacli_add_company();
 	}
-	else if (option[0] == '3') { // add company
+	else if (option[0] == '3') { // add platform
 		jacli_add_platform();
+	}
+	else if (option[0] == '4') { // list all companies
+		jacli_list_companies();
+	}
+	else if (option[0] == '5') { // list all platforms
+		jacli_list_platforms();
 	}
 	else if (option[0] == 'h') { //help
 		jacli_help();
@@ -111,6 +122,14 @@ static void jacli_add_platform() {
 		printf("JACLI: Found Platform ID: %d\n", platformId);
 	}
 
+}
+
+static void jacli_list_companies() {
+	db_select_all_companies();
+}
+
+static void jacli_list_platforms() {
+	db_select_all_platforms();
 }
 
 void jacli_close() {

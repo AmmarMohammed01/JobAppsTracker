@@ -10,4 +10,7 @@ unsigned long long db_insert_company(const char * companyName);
 int db_select_platform(const char * companyName);
 unsigned long long db_insert_platform(const char * companyName);
 
+void db_select_all_companies();
+void db_select_all_platforms();
+
 #endif

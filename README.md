@@ -1,6 +1,29 @@
 # About
 MySQL Client and MySQL Database to help user keep track of the job applications.
 
+# Intended Features
+- Allow users to add job listings ( job title, company, job search platform, date )
+- Allow users to see how many jobs they apply to daily (on average)
+- Allow users to see how many jobs they have applied within a specified date range (important)
+    - day
+    - week
+    - month
+    - year
+- Allow users to track status of job applications ( job, status, date )
+    - Applied
+    - Phone Screening
+    - Interview
+    - Rejected
+- Allow users to see which resume is getting the most interviews
+- Allow users to categorize job applications. Allow users to see how many of each they have applied. Examples would be:
+    - Software engineering
+    - Electrical engineering
+    - Marketing
+- Allow users to search what companies they have applied to
+    - What companies the user has applied to the most
+- Allow users to search what job search platforms they use
+    - What job search platform they use the most
+
 # Setup
 
 Create a .env

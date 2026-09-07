@@ -3,6 +3,7 @@ MySQL Client and MySQL Database to help user keep track of the job applications.
 
 # Intended Features
 - Allow users to add job listings ( job title, company, job search platform, date )
+    - NOTE: date is not stored job_listing table, but rather stored in job_status
 - Allow users to see how many jobs they apply to daily (on average)
 - Allow users to see how many jobs they have applied within a specified date range (important)
     - day
@@ -23,6 +24,9 @@ MySQL Client and MySQL Database to help user keep track of the job applications.
     - What companies the user has applied to the most
 - Allow users to search what job search platforms they use
     - What job search platform they use the most
+
+# Database Diagram
+![Database Diagram](documentation/jobapps-db-diagram-v2.jpg)
 
 # Setup
 

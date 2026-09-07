@@ -16,6 +16,7 @@ static void jacli_add_platform();
 //static void jacli_info(); //relevant info
 static void jacli_list_companies();
 static void jacli_list_platforms();
+static void jacli_list_status_types(); // NOT IMPLEMENTED YET
 static void jacli_help();
 
 void jacli_setup() {
@@ -64,6 +65,10 @@ static void jacli_help() {
 	printf("You reached the help page\n");
 }
 
+// user_input should look like:
+// - company name, platform name, job title, and date
+// - company name, platform name, job title (date automatically set to today)
+// each of the fields should be comma separated
 static void jacli_add_job_listing() {
 	char user_input[100];
 	printf("Type company name, platform name, job title:\n");
@@ -77,7 +82,8 @@ static void jacli_add_job_listing() {
 	//search if platform_name is in database, get platform_id
 	//send query to database with "company_id, platform_id, and job_title"
 
-	int return_status;
+	// also add job_status of applied with date specified by user
+
 }
 
 static void jacli_add_company() {
@@ -131,6 +137,12 @@ static void jacli_list_companies() {
 static void jacli_list_platforms() {
 	db_select_all_platforms();
 }
+
+/*
+static void jacli_list_status_types() {
+	//db_select_all_status_descriptions();
+}
+*/
 
 void jacli_close() {
 	db_close();

@@ -3,7 +3,7 @@
 # resources.txt
 
 # directories
-documentation
+documentation/hidden
 build
 
 # for clangd lsp

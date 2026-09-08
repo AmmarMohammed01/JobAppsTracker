@@ -308,60 +308,6 @@ int db_insert_platform(const char * platformName) {
 	return platformId;
 }
 
-void db_select_all_companies() {
-	const char * stmt_string = "SELECT * FROM company";
-	unsigned long length = strlen(stmt_string);
-
-	if(mysql_query(mysql, stmt_string)) { //0 success
-		fprintf(stderr, "Error occured executing query. ERR_MSG %s\n", mysql_error(mysql));
-		return;
-	}
-
-	MYSQL_RES * result = mysql_store_result(mysql);
-
-	MYSQL_ROW row;
-	unsigned int num_fields = mysql_num_fields(result);
-
-	while( (row = mysql_fetch_row(result)) ) {
-		unsigned long *lengths;
-		lengths = mysql_fetch_lengths(result);
-		for(unsigned int i = 0; i < num_fields; i++)
-		{
-			printf("[%.*s] ", (int) lengths[i], row[i] ? row[i] : "NULL");
-		}
-		printf("\n");
-	}
-
-	mysql_free_result(result);
-}
-
-void db_select_all_platforms() {
-	const char * stmt_string = "SELECT * FROM platform";
-	unsigned long length = strlen(stmt_string);
-
-	if(mysql_query(mysql, stmt_string)) { //0 success
-		fprintf(stderr, "Error occured executing query. ERR_MSG %s\n", mysql_error(mysql));
-		return;
-	}
-
-	MYSQL_RES * result = mysql_store_result(mysql);
-
-	MYSQL_ROW row;
-	unsigned int num_fields = mysql_num_fields(result);
-
-	while( (row = mysql_fetch_row(result)) ) {
-		unsigned long *lengths;
-		lengths = mysql_fetch_lengths(result);
-		for(unsigned int i = 0; i < num_fields; i++)
-		{
-			printf("[%.*s] ", (int) lengths[i], row[i] ? row[i] : "NULL");
-		}
-		printf("\n");
-	}
-
-	mysql_free_result(result);
-}
-
 //RETURN -1 IF ERROR, ELSE RETURN NEWLY INSERTED JOBID
 int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle) {
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
@@ -420,4 +366,30 @@ int db_insert_job_listing(const int companyId, const int platformId, const char 
 	mysql_stmt_close(stmt_handler); // b/c stmt_init
 
 	return jobId;
+}
+
+void db_select_all(const char * stmt_string) {
+	unsigned long length = strlen(stmt_string);
+
+	if(mysql_query(mysql, stmt_string)) { //0 success
+		fprintf(stderr, "Error occured executing query. ERR_MSG %s\n", mysql_error(mysql));
+		return;
+	}
+
+	MYSQL_RES * result = mysql_store_result(mysql);
+
+	MYSQL_ROW row;
+	unsigned int num_fields = mysql_num_fields(result);
+
+	while( (row = mysql_fetch_row(result)) ) {
+		unsigned long *lengths;
+		lengths = mysql_fetch_lengths(result);
+		for(unsigned int i = 0; i < num_fields; i++)
+		{
+			printf("[%.*s] ", (int) lengths[i], row[i] ? row[i] : "NULL");
+		}
+		printf("\n");
+	}
+
+	mysql_free_result(result);
 }

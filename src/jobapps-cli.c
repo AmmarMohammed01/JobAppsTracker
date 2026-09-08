@@ -16,6 +16,8 @@ static void jacli_add_platform();
 //static void jacli_info(); //relevant info
 static void jacli_list_companies();
 static void jacli_list_platforms();
+static void jacli_list_job_listings();
+
 static void jacli_list_status_types(); // NOT IMPLEMENTED YET
 static void jacli_help();
 
@@ -56,6 +58,9 @@ void jacli_menu() {
 	else if (option[0] == '5') { // list all platforms
 		jacli_list_platforms();
 	}
+	else if (option[0] == '6') { // list all platforms
+		jacli_list_job_listings();
+	}
 	else if (option[0] == 'h') { //help
 		jacli_help();
 	}
@@ -71,22 +76,13 @@ static void jacli_help() {
 // each of the fields should be comma separated
 static void jacli_add_job_listing() {
 	char user_input[255]; //100 company_name, 100 job_title, 50 platform_name
-	printf("Type company name, platform name, job title:\n");
+	printf("Type: company_name`platform_name`job_title:\n");
 	fgets(user_input, sizeof(user_input), stdin);
 
 	user_input[strcspn(user_input, "\r\n")] = '\0';
 
-	//perhaps parsing should happen in here.
+	//Parse user input
 	const char * delimeter = "`";
-
-	/*
-	char * token;
-	if ( (token = strtok(user_input, delimeter)) != NULL) {
-		do {
-			printf("Token: %s\n", token);
-		} while( (token = strtok(NULL, delimeter)) != NULL );
-	}
-	*/
 
 	char * companyName = strtok(user_input, delimeter);
 	char * platformName = strtok(NULL, delimeter);
@@ -96,7 +92,7 @@ static void jacli_add_job_listing() {
 	printf("p: %s\n", platformName);
 	printf("j: %s\n", jobTitle);
 
-	//search if company_name is in databse, get company_id
+	//Search if company_name is in databse, get company_id
 	int companyId = db_select_company(companyName);
 	if (companyId == -1) {
 		printf("Company not found, adding company to database...\n");
@@ -108,7 +104,7 @@ static void jacli_add_job_listing() {
 	}
 	printf("Company added w/ id = %d\n", companyId);
 	
-	//search if platform_name is in database, get platform_id
+	//Search if platform_name is in database, get platform_id
 	int platformId = db_select_platform(platformName);
 	if (platformId == -1) {
 		printf("Platform not found, adding platform to database...\n");
@@ -120,7 +116,7 @@ static void jacli_add_job_listing() {
 	}
 	printf("Platform added w/ id = %d\n", platformId);
 	
-	//send query to database with "company_id, platform_id, and job_title"
+	//Send query to database with "company_id, platform_id, and job_title"
 	int jobId = db_insert_job_listing(companyId, platformId, jobTitle);
 	if (jobId == -1) {
 		fprintf(stderr, "Error adding job listing!\n");
@@ -186,11 +182,24 @@ static void jacli_add_platform() {
 }
 
 static void jacli_list_companies() {
-	db_select_all_companies();
+	db_select_all("SELECT * FROM company");
 }
 
 static void jacli_list_platforms() {
-	db_select_all_platforms();
+	db_select_all("SELECT * FROM platform");
+}
+
+static void jacli_list_job_listings() {
+	//print fields on top
+	//replace ids with names
+
+	//current output
+	//[1] [4] [1] [Embedded Software Engineer] []
+
+	//intended output
+	//Job ID | Company Name | Platform Name | Job Title | Resume Name
+	//1      | EmbCoExample | ExaJobFinder  | Embedded Software Engineer | NULL
+	db_select_all("SELECT * FROM job_listing");
 }
 
 /*

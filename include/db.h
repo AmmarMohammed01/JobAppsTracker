@@ -10,8 +10,7 @@ int db_insert_company(const char * companyName);
 int db_select_platform(const char * platformName);
 int db_insert_platform(const char * platformName);
 
-void db_select_all_companies();
-void db_select_all_platforms();
+void db_select_all(const char * stmt_string);
 
 int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle);
 

@@ -5,7 +5,7 @@
 */
 
 #include <stdio.h>
-#include <string.h> //strcspn
+#include <string.h> //strcspn, strtok
 #include "jobapps-cli.h"
 #include "db.h"
 
@@ -70,18 +70,63 @@ static void jacli_help() {
 // - company name, platform name, job title (date automatically set to today)
 // each of the fields should be comma separated
 static void jacli_add_job_listing() {
-	char user_input[100];
+	char user_input[255]; //100 company_name, 100 job_title, 50 platform_name
 	printf("Type company name, platform name, job title:\n");
 	fgets(user_input, sizeof(user_input), stdin);
 
 	user_input[strcspn(user_input, "\r\n")] = '\0';
 
 	//perhaps parsing should happen in here.
+	const char * delimeter = "`";
+
+	/*
+	char * token;
+	if ( (token = strtok(user_input, delimeter)) != NULL) {
+		do {
+			printf("Token: %s\n", token);
+		} while( (token = strtok(NULL, delimeter)) != NULL );
+	}
+	*/
+
+	char * companyName = strtok(user_input, delimeter);
+	char * platformName = strtok(NULL, delimeter);
+	char * jobTitle = strtok(NULL, delimeter);
+
+	printf("c: %s\n", companyName);
+	printf("p: %s\n", platformName);
+	printf("j: %s\n", jobTitle);
 
 	//search if company_name is in databse, get company_id
+	int companyId = db_select_company(companyName);
+	if (companyId == -1) {
+		printf("Company not found, adding company to database...\n");
+		companyId = db_insert_company(companyName);
+		if(companyId == -1) {
+			fprintf(stderr, "Error inserting company.\n");
+			return;
+		}
+	}
+	printf("Company added w/ id = %d\n", companyId);
+	
 	//search if platform_name is in database, get platform_id
+	int platformId = db_select_platform(platformName);
+	if (platformId == -1) {
+		printf("Platform not found, adding platform to database...\n");
+		platformId = db_insert_platform(platformName);
+		if(platformId == -1) {
+			fprintf(stderr, "Error inserting platform.\n");
+			return;
+		}
+	}
+	printf("Platform added w/ id = %d\n", platformId);
+	
 	//send query to database with "company_id, platform_id, and job_title"
-
+	int jobId = db_insert_job_listing(companyId, platformId, jobTitle);
+	if (jobId == -1) {
+		fprintf(stderr, "Error adding job listing!\n");
+		return;
+	}
+	printf("Job successfully added w/ id = %d\n", jobId);
 	// also add job_status of applied with date specified by user
 
 }
@@ -97,6 +142,16 @@ static void jacli_add_company() {
 
 	// Send input to see if exists
 	int companyId = db_select_company(companyName);
+	if (companyId == -1) {
+		fprintf(stderr, "JACLI: Company ID for '%s' does not exist in database.\n", companyName);
+		unsigned long long affectedRows = db_insert_company(companyName);
+		printf("%llu company added.\n", affectedRows);
+	}
+	else {
+		printf("JACLI: Found Company ID: %d\n", companyId);
+	}
+
+	int platformId = db_select_company(companyName);
 	if (companyId == -1) {
 		fprintf(stderr, "JACLI: Company ID for '%s' does not exist in database.\n", companyName);
 		unsigned long long affectedRows = db_insert_company(companyName);

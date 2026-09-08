@@ -56,12 +56,8 @@ void db_close() {
 	mysql_library_end();
 }
 
-// RETURN ID, else 0 for ERROR
+// RETURN COMPANY_ID, else -1 for ERROR
 int db_select_company(const char * companyName) {
-	//SELECT * FROM company WHERE company_name = "$(companyName)";
-
-	int return_status;
-
 	MYSQL_STMT * preparedStatement = mysql_stmt_init(mysql);
 	const char *stmt_str = "SELECT company_id FROM company WHERE company_name = ?";
 	unsigned long length = strlen(stmt_str); // NOTE: what is the value of the string <-- the value hasn't been prepared yet...
@@ -71,7 +67,7 @@ int db_select_company(const char * companyName) {
 		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
 		mysql_stmt_close(preparedStatement);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
 	MYSQL_BIND bind[1];
@@ -80,7 +76,7 @@ int db_select_company(const char * companyName) {
 	unsigned long str_length = strlen(companyName);
 	/* STRING PARAM */
 	bind[0].buffer_type = MYSQL_TYPE_STRING;
-	bind[0].buffer = (char *)companyName; // (char *)str_data
+	bind[0].buffer = (char *)companyName;
 	bind[0].buffer_length = 50;
 	bind[0].is_null = 0;
 	bind[0].length = &str_length;
@@ -88,15 +84,14 @@ int db_select_company(const char * companyName) {
 	if ( mysql_stmt_bind_param(preparedStatement, bind) ) {
 		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
 		mysql_stmt_close(preparedStatement);
-		return 1;
+		return -1;
 	}
 
-	if( (return_status = mysql_stmt_execute(preparedStatement)) ) {
+	if( mysql_stmt_execute(preparedStatement) ) {
 		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
-		fprintf(stderr, "Return Status: %d\n", return_status);
 		mysql_stmt_close(preparedStatement);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
 	MYSQL_RES * result = mysql_stmt_result_metadata(preparedStatement); //for SELECT
@@ -118,10 +113,11 @@ int db_select_company(const char * companyName) {
 		fprintf(stderr, "Result bind failed: %s\n", mysql_stmt_error(preparedStatement));
 		mysql_stmt_close(preparedStatement);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
 	//handle empty values, no results found
+	int return_status;
 	while ((return_status = mysql_stmt_fetch(preparedStatement)) == 0) {
 		if (return_status == 1 || return_status == MYSQL_NO_DATA) {
 			printf("No data left\n");
@@ -142,10 +138,8 @@ int db_select_company(const char * companyName) {
 	return companyId;
 }
 
-unsigned long long db_insert_company(const char * companyName) {
-	//int insert_complete = 0; //1 if complete
-
-	//INSERT INTO company (company_name) VALUES (?);
+//RETURN -1 if ERROR, else COMPANY_ID
+int db_insert_company(const char * companyName) {
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
 	const char * stmt_string = "INSERT INTO company (company_name) VALUES (?);";
 	unsigned long length = strlen(stmt_string);
@@ -154,7 +148,7 @@ unsigned long long db_insert_company(const char * companyName) {
 		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
 	MYSQL_BIND bind[1];
@@ -163,7 +157,7 @@ unsigned long long db_insert_company(const char * companyName) {
 	unsigned long param_str_length = strlen(companyName);
 	/* STRING PARAM */
 	bind[0].buffer_type = MYSQL_TYPE_STRING;
-	bind[0].buffer = (char *)companyName; // (char *)str_data
+	bind[0].buffer = (char *)companyName;
 	bind[0].buffer_length = 50;
 	bind[0].is_null = 0;
 	bind[0].length = &param_str_length;
@@ -171,30 +165,25 @@ unsigned long long db_insert_company(const char * companyName) {
 	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
 		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
-		return 1;
+		return -1;
 	}
 
 	if( (mysql_stmt_execute(stmt_handler)) ) {
 		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
-	unsigned long long affectedRows = mysql_stmt_affected_rows(stmt_handler); //same as uint64_t
+	int companyId = mysql_stmt_insert_id(stmt_handler);
 
 	mysql_stmt_close(stmt_handler); // b/c stmt_init
 
-	//return insert_complete;
-	return affectedRows;
+	return companyId;
 }
 
 
 int db_select_platform(const char * platformName) {
-	//SELECT * FROM platform WHERE platform_name = "$(platformName)";
-
-	int return_status;
-
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
 	const char * stmt_string = "SELECT platform_id FROM platform WHERE platform_name = ?";
 	unsigned long length = strlen(stmt_string); // NOTE: what is the value of the string <-- the value hasn't been prepared yet...
@@ -204,7 +193,7 @@ int db_select_platform(const char * platformName) {
 		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
 	MYSQL_BIND bind[1];
@@ -221,15 +210,14 @@ int db_select_platform(const char * platformName) {
 	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
 		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
-		return 1;
+		return -1;
 	}
 
-	if( (return_status = mysql_stmt_execute(stmt_handler)) ) {
+	if(mysql_stmt_execute(stmt_handler)) {
 		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
-		fprintf(stderr, "Return Status: %d\n", return_status);
 		mysql_stmt_close(stmt_handler);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
 	MYSQL_RES * result = mysql_stmt_result_metadata(stmt_handler); //for SELECT
@@ -251,10 +239,11 @@ int db_select_platform(const char * platformName) {
 		fprintf(stderr, "Result bind failed: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
 	//handle empty values, no results found
+	int return_status;
 	while ((return_status = mysql_stmt_fetch(stmt_handler)) == 0) {
 		if (return_status == 1 || return_status == MYSQL_NO_DATA) {
 			printf("No data left\n");
@@ -275,7 +264,8 @@ int db_select_platform(const char * platformName) {
 	return platformId;
 }
 
-unsigned long long db_insert_platform(const char * platformName) {
+//RETURN -1 IF ERROR, ELSE PLATFORM_ID
+int db_insert_platform(const char * platformName) {
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
 	const char * stmt_string = "INSERT INTO platform (platform_name) VALUES (?);";
 	unsigned long length = strlen(stmt_string);
@@ -284,7 +274,7 @@ unsigned long long db_insert_platform(const char * platformName) {
 		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
 	MYSQL_BIND bind[1];
@@ -301,21 +291,21 @@ unsigned long long db_insert_platform(const char * platformName) {
 	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
 		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
-		return 1;
+		return -1;
 	}
 
 	if( (mysql_stmt_execute(stmt_handler)) ) {
 		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
 		mysql_stmt_close(stmt_handler);
 		mysql_close(mysql);
-		return 1;
+		return -1;
 	}
 
-	unsigned long long affectedRows = mysql_stmt_affected_rows(stmt_handler); //same as uint64_t
+	int platformId = mysql_stmt_insert_id(stmt_handler);
 
 	mysql_stmt_close(stmt_handler); // b/c stmt_init
 
-	return affectedRows;
+	return platformId;
 }
 
 void db_select_all_companies() {
@@ -370,4 +360,64 @@ void db_select_all_platforms() {
 	}
 
 	mysql_free_result(result);
+}
+
+//RETURN -1 IF ERROR, ELSE RETURN NEWLY INSERTED JOBID
+int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle) {
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "INSERT INTO job_listing (company_id, platform_id, job_title) VALUES (?, ?, ?);";
+	unsigned long length = strlen(stmt_string);
+	
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[3];
+	memset(bind, 0, sizeof(bind));
+
+	/* INTEGER PARAM */
+	/* This is a number type, so there is no need
+	to specify buffer_length */
+	bind[0].buffer_type= MYSQL_TYPE_LONG;
+	bind[0].buffer= (char *)&companyId;
+	bind[0].is_null= 0;
+	bind[0].length= 0;
+
+	/* INTEGER PARAM */
+	bind[1].buffer_type= MYSQL_TYPE_LONG;
+	bind[1].buffer= (char *)&platformId;
+	bind[1].is_null= 0;
+	bind[1].length= 0;
+
+	unsigned long param_str_length = strlen(jobTitle);
+	/* STRING PARAM */
+	bind[2].buffer_type = MYSQL_TYPE_STRING;
+	bind[2].buffer = (char *)jobTitle;
+	bind[2].buffer_length = 50;
+	bind[2].is_null = 0;
+	bind[2].length = &param_str_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return -1;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	unsigned long long affectedRows = mysql_stmt_affected_rows(stmt_handler); //same as uint64_t
+
+	int jobId = mysql_stmt_insert_id(stmt_handler); // RETURNS NO ERRORS
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return jobId;
 }

@@ -393,3 +393,69 @@ void db_select_all(const char * stmt_string) {
 
 	mysql_free_result(result);
 }
+
+int db_insert_job_status(const int jobId, const char * status_datetime, const char * status_description) {
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "INSERT INTO job_status (job_id, status_datetime, status_description) VALUES (?, ?, ?)";
+	unsigned long length = strlen(stmt_string);
+	
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[3];
+	memset(bind, 0, sizeof(bind));
+
+	/* INTEGER PARAM */
+	bind[0].buffer_type= MYSQL_TYPE_LONG;
+	bind[0].buffer= (char *)&jobId;
+	bind[0].is_null= 0;
+	bind[0].length= 0;
+
+	/* DATE PARAM - p. 15-16*/
+	//PERMISSABLE INPUT DATA TYPES FOR MYSQL BIND STRUCTS p. 130 table 6.1
+	//MYSQL_TIME mt_status_datetime;
+	// I found out I can just pass a string as the binding instead of datetime
+	//bind[1].buffer_type= MYSQL_TYPE_DATETIME;
+	//bind[1].buffer= (char *)&mt_status_datetime;
+	unsigned long datetime_length = strlen(status_datetime);
+	bind[1].buffer_type= MYSQL_TYPE_STRING;
+	bind[1].buffer= (char *)status_datetime;
+	bind[1].buffer_length = datetime_length;
+	bind[1].is_null= 0;
+	bind[1].length= 0;
+	bind[1].length = &datetime_length;
+
+	/* STRING PARAM */
+	unsigned long description_length = strlen(status_description);
+	bind[2].buffer_type = MYSQL_TYPE_STRING;
+	bind[2].buffer = (char *)status_description;
+	bind[2].buffer_length = 50;
+	bind[2].is_null = 0;
+	bind[2].length = &description_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return -1;
+	}
+
+	//supply data to be sent to the structure
+	//mt_status_datetime.year
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	int statusId = mysql_stmt_insert_id(stmt_handler);
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return statusId;
+}

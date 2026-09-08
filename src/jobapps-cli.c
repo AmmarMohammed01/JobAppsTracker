@@ -5,6 +5,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h> //atoi
 #include <string.h> //strcspn, strtok
 #include "jobapps-cli.h"
 #include "db.h"
@@ -13,6 +14,8 @@
 static void jacli_add_job_listing();
 static void jacli_add_company();
 static void jacli_add_platform();
+static void jacli_add_job_status();
+
 //static void jacli_info(); //relevant info
 static void jacli_list_companies();
 static void jacli_list_platforms();
@@ -34,6 +37,8 @@ void jacli_menu() {
 	printf("3. Add platform\n");
 	printf("4. List all companies\n");
 	printf("5. List all platforms\n");
+	printf("6. List all job listings\n");
+	printf("7. Add job status\n");
 	printf("h. usage help\n");
 
 	// REQUEST USER INPUT
@@ -60,6 +65,9 @@ void jacli_menu() {
 	}
 	else if (option[0] == '6') { // list all platforms
 		jacli_list_job_listings();
+	}
+	else if (option[0] == '7') { // list all platforms
+		jacli_add_job_status();
 	}
 	else if (option[0] == 'h') { //help
 		jacli_help();
@@ -179,6 +187,36 @@ static void jacli_add_platform() {
 		printf("JACLI: Found Platform ID: %d\n", platformId);
 	}
 
+}
+
+/*
+ADD ERROR HANDLING FOR USER INPUT:
+- job id not found
+- invalid date
+- large description
+
+ADD SUCCESS OUTPUT WHEN STATUS IS ADDED
+*/
+static void jacli_add_job_status() {
+	char user_input[100]; //5ish for jobId, around 16 for datetime, 50 for status description
+	printf("Type: job_id`status_datetime`status_description:\n");
+	fgets(user_input, sizeof(user_input), stdin);
+
+	user_input[strcspn(user_input, "\r\n")] = '\0';
+
+	//Parse user input
+	const char * delimeter = "`";
+
+	char * jobId_str = strtok(user_input, delimeter);
+	char * status_datetime = strtok(NULL, delimeter);
+	char * status_description = strtok(NULL, delimeter);
+
+	const int jobId = atoi(jobId_str);
+	printf("jobId: %d\n", jobId);
+	printf("datetime: %s\n", status_datetime);
+	printf("description: %s\n", status_description);
+
+	db_insert_job_status(jobId, status_datetime, status_description);
 }
 
 static void jacli_list_companies() {

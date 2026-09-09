@@ -309,9 +309,9 @@ int db_insert_platform(const char * platformName) {
 }
 
 //RETURN -1 IF ERROR, ELSE RETURN NEWLY INSERTED JOBID
-int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle) {
+int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle, const int resumeId) {
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
-	const char * stmt_string = "INSERT INTO job_listing (company_id, platform_id, job_title) VALUES (?, ?, ?);";
+	const char * stmt_string = "INSERT INTO job_listing (company_id, platform_id, job_title, resume_id) VALUES (?, ?, ?, ?);";
 	unsigned long length = strlen(stmt_string);
 	
 	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
@@ -321,7 +321,7 @@ int db_insert_job_listing(const int companyId, const int platformId, const char 
 		return -1;
 	}
 
-	MYSQL_BIND bind[3];
+	MYSQL_BIND bind[4];
 	memset(bind, 0, sizeof(bind));
 
 	/* INTEGER PARAM */
@@ -345,6 +345,12 @@ int db_insert_job_listing(const int companyId, const int platformId, const char 
 	bind[2].buffer_length = 50;
 	bind[2].is_null = 0;
 	bind[2].length = &param_str_length;
+
+	/* INTEGER PARAM */
+	bind[3].buffer_type= MYSQL_TYPE_LONG;
+	bind[3].buffer= (char *)&resumeId;
+	bind[3].is_null= 0;
+	bind[3].length= 0;
 
 	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
 		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
@@ -537,4 +543,169 @@ int db_select_job_id(const int jobId) {
 	mysql_stmt_close(preparedStatement); // b/c stmt_init
 
 	return resultId;
+}
+
+//If error return -1, else return rowsAffected
+int db_delete_job_listing(const int jobId) {
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "DELETE FROM job_listing WHERE job_id = ?";
+	unsigned long length = strlen(stmt_string);
+	
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	/* INTEGER PARAM */
+	bind[0].buffer_type= MYSQL_TYPE_LONG;
+	bind[0].buffer= (char *)&jobId;
+	bind[0].is_null= 0;
+	bind[0].length= 0;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return -1;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	int rowsAffected = mysql_stmt_affected_rows(stmt_handler);
+
+	return rowsAffected;
+}
+
+
+int db_select_resume(const char * resumeName) {
+	MYSQL_STMT * preparedStatement = mysql_stmt_init(mysql);
+	const char *stmt_str = "SELECT resume_id FROM resume WHERE resume_name = ?";
+	unsigned long length = strlen(stmt_str); // NOTE: what is the value of the string <-- the value hasn't been prepared yet...
+
+	//prepare and bind before execution
+	if(mysql_stmt_prepare(preparedStatement, stmt_str, length)) { //success = 0
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long str_length = strlen(resumeName);
+	/* STRING PARAM */
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (char *)resumeName;
+	bind[0].buffer_length = 50;
+	bind[0].is_null = 0;
+	bind[0].length = &str_length;
+
+	if ( mysql_stmt_bind_param(preparedStatement, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		return -1;
+	}
+
+	if( mysql_stmt_execute(preparedStatement) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_RES * result = mysql_stmt_result_metadata(preparedStatement); //for SELECT
+	
+	int resumeId = -1;
+	bool isNull = 0;
+	bool error = 0;
+	unsigned long resultLength = 0;
+
+	MYSQL_BIND bindResult[1];
+	memset(bindResult, 0, sizeof(bindResult));
+	bindResult[0].buffer_type = MYSQL_TYPE_LONG;
+	bindResult[0].buffer = (char *)&resumeId;
+	bindResult[0].is_null = &isNull;
+	bindResult[0].length = &resultLength;
+	bindResult[0].error = &error;
+
+	if( mysql_stmt_bind_result(preparedStatement, bindResult) != 0) {
+		fprintf(stderr, "Result bind failed: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	//handle empty values, no results found
+	int return_status;
+	while ((return_status = mysql_stmt_fetch(preparedStatement)) == 0) {
+		if (return_status == 1 || return_status == MYSQL_NO_DATA) {
+			printf("No data left\n");
+			break;
+		}
+
+		if(!isNull) {
+		    printf("resume_id: %d\n", resumeId);
+		}
+	}
+
+	mysql_free_result(result); // b/c stmt_result_metadata
+
+	mysql_stmt_close(preparedStatement); // b/c stmt_init
+
+	return resumeId;
+}
+
+int db_insert_resume(const char * resumeName) {
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "INSERT INTO resume (resume_name) VALUES (?);";
+	unsigned long length = strlen(stmt_string);
+	
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long param_str_length = strlen(resumeName);
+	/* STRING PARAM */
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (char *)resumeName;
+	bind[0].buffer_length = 50;
+	bind[0].is_null = 0;
+	bind[0].length = &param_str_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return -1;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	int resumeId = mysql_stmt_insert_id(stmt_handler);
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return resumeId;
 }

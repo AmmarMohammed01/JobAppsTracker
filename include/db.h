@@ -12,9 +12,14 @@ int db_insert_platform(const char * platformName);
 
 void db_select_all(const char * stmt_string);
 
-int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle);
+int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle, const int resumeId);
 int db_insert_job_status(const int jobId, const char * status_date, const char * status_description);
 
 int db_select_job_id(const int jobId);
+
+int db_select_resume(const char * resumeName);
+int db_insert_resume(const char * resumeName);
+
+int db_delete_job_listing(const int jobId);
 
 #endif

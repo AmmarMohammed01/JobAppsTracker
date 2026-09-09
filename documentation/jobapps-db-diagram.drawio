@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram name="Page-1" id="kLJM26SOjO7yVz_w7Arv">
-    <mxGraphModel dx="1812" dy="941" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2024" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -19,10 +19,10 @@
         <mxCell id="kZxYngpPkVvnCMaUs6gd-15" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="password" vertex="1">
           <mxGeometry height="40" width="120" x="690" y="490" as="geometry" />
         </mxCell>
-        <mxCell id="9YApmtAQIK37fYfwUdT2-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="job listing" vertex="1">
+        <mxCell id="9YApmtAQIK37fYfwUdT2-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="job" vertex="1">
           <mxGeometry height="40" width="100" x="140" y="280" as="geometry" />
         </mxCell>
-        <mxCell id="9YApmtAQIK37fYfwUdT2-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="job status" vertex="1">
+        <mxCell id="9YApmtAQIK37fYfwUdT2-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="status" vertex="1">
           <mxGeometry height="40" width="100" x="420" y="500" as="geometry" />
         </mxCell>
         <mxCell id="9YApmtAQIK37fYfwUdT2-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="login" vertex="1">
@@ -31,7 +31,7 @@
         <mxCell id="9YApmtAQIK37fYfwUdT2-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="company" vertex="1">
           <mxGeometry height="40" width="100" x="540" y="280" as="geometry" />
         </mxCell>
-        <mxCell id="9YApmtAQIK37fYfwUdT2-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="job link" vertex="1">
+        <mxCell id="9YApmtAQIK37fYfwUdT2-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="url" vertex="1">
           <mxGeometry height="40" width="100" x="90" y="500" as="geometry" />
         </mxCell>
         <mxCell id="9YApmtAQIK37fYfwUdT2-7" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;" value="&lt;u&gt;job id&lt;/u&gt;" vertex="1">
@@ -148,10 +148,10 @@
             <mxPoint x="240" y="560" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="9YApmtAQIK37fYfwUdT2-37" parent="1" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="APPLY TO" vertex="1">
+        <mxCell id="9YApmtAQIK37fYfwUdT2-37" parent="1" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="POSTED" vertex="1">
           <mxGeometry height="80" width="80" x="360" y="260" as="geometry" />
         </mxCell>
-        <mxCell id="9YApmtAQIK37fYfwUdT2-38" parent="1" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="POSTED ON" vertex="1">
+        <mxCell id="9YApmtAQIK37fYfwUdT2-38" parent="1" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="HOSTED" vertex="1">
           <mxGeometry height="80" width="80" x="150" y="170" as="geometry" />
         </mxCell>
         <mxCell id="9YApmtAQIK37fYfwUdT2-39" edge="1" parent="1" source="9YApmtAQIK37fYfwUdT2-1" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="9YApmtAQIK37fYfwUdT2-38" value="">
@@ -304,7 +304,7 @@
         <mxCell id="9YApmtAQIK37fYfwUdT2-81" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="1" vertex="1">
           <mxGeometry height="30" width="20" x="340" y="110" as="geometry" />
         </mxCell>
-        <mxCell id="9YApmtAQIK37fYfwUdT2-83" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="job category" vertex="1">
+        <mxCell id="9YApmtAQIK37fYfwUdT2-83" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="category" vertex="1">
           <mxGeometry height="40" width="100" x="-180" y="280" as="geometry" />
         </mxCell>
         <mxCell id="9YApmtAQIK37fYfwUdT2-84" parent="1" style="rhombus;whiteSpace=wrap;html=1;shapeInside=1;" value="CONTAINS" vertex="1">

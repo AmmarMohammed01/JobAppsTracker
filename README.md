@@ -26,7 +26,7 @@ MySQL Client and MySQL Database to help user keep track of the job applications.
     - What job search platform they use the most
 
 # Database Diagram
-![Database Diagram](documentation/jobapps-db-diagram-v2.jpg)
+![Database Diagram](documentation/jobapps-db-diagram-v3.jpg)
 
 # Setup
 

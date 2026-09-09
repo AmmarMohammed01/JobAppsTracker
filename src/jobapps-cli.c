@@ -191,11 +191,11 @@ static void jacli_add_platform() {
 
 /*
 ADD ERROR HANDLING FOR USER INPUT:
-- job id not found
-- invalid date
-- large description
+- job id not found (DONE)
+- invalid date (MySQL throws a Foreign Key error)
+- large description (assumption is that description is cut-off)
 
-ADD SUCCESS OUTPUT WHEN STATUS IS ADDED
+ADD SUCCESS OUTPUT WHEN STATUS IS ADDED (DONE)
 */
 static void jacli_add_job_status() {
 	char user_input[100]; //5ish for jobId, around 16 for datetime, 50 for status description
@@ -216,7 +216,17 @@ static void jacli_add_job_status() {
 	printf("datetime: %s\n", status_datetime);
 	printf("description: %s\n", status_description);
 
-	db_insert_job_status(jobId, status_datetime, status_description);
+	if (db_select_job_id(jobId) == -1) {
+		fprintf(stderr, "Job ID %d NOT found.\n", jobId);
+		return;
+	}
+
+	int statusId;
+	if ( (statusId = db_insert_job_status(jobId, status_datetime, status_description)) == -1) {
+		printf("Unable to add job status!\n");
+		return;
+	}
+	printf("Successfully added job status with id: %d\n", statusId);
 }
 
 static void jacli_list_companies() {

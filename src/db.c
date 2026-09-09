@@ -394,6 +394,7 @@ void db_select_all(const char * stmt_string) {
 	mysql_free_result(result);
 }
 
+//return statusId
 int db_insert_job_status(const int jobId, const char * status_datetime, const char * status_description) {
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
 	const char * stmt_string = "INSERT INTO job_status (job_id, status_datetime, status_description) VALUES (?, ?, ?)";
@@ -458,4 +459,82 @@ int db_insert_job_status(const int jobId, const char * status_datetime, const ch
 	mysql_stmt_close(stmt_handler); // b/c stmt_init
 
 	return statusId;
+}
+
+//Search if job_id exists: -1 if not found, else found
+int db_select_job_id(const int jobId) {
+	MYSQL_STMT * preparedStatement = mysql_stmt_init(mysql);
+	const char *stmt_str = "SELECT job_id FROM job_listing WHERE job_id = ?";
+	unsigned long stmt_length = strlen(stmt_str); // NOTE: what is the value of the string <-- the value hasn't been prepared yet...
+
+	//prepare and bind before execution
+	if(mysql_stmt_prepare(preparedStatement, stmt_str, stmt_length)) { //success = 0
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	/* INTEGER PARAM This is a number type, so there is no need to specify buffer_length */
+	bind[0].buffer_type= MYSQL_TYPE_LONG;
+	bind[0].buffer= (char *)&jobId;
+	bind[0].is_null= 0;
+	bind[0].length= 0;
+
+	if ( mysql_stmt_bind_param(preparedStatement, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		return -1;
+	}
+
+	if( mysql_stmt_execute(preparedStatement) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_RES * result = mysql_stmt_result_metadata(preparedStatement); //for SELECT
+	
+	int resultId = -1;
+	bool isNull = 0;
+	bool error = 0;
+	unsigned long resultLength = 0;
+
+	MYSQL_BIND bindResult[1];
+	memset(bindResult, 0, sizeof(bindResult));
+	bindResult[0].buffer_type = MYSQL_TYPE_LONG;
+	bindResult[0].buffer = (char *)&resultId;
+	bindResult[0].is_null = &isNull;
+	bindResult[0].length = &resultLength;
+	bindResult[0].error = &error;
+
+	if( mysql_stmt_bind_result(preparedStatement, bindResult) != 0) {
+		fprintf(stderr, "Result bind failed: %s\n", mysql_stmt_error(preparedStatement));
+		mysql_stmt_close(preparedStatement);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	//handle empty values, no results found
+	int return_status;
+	while ((return_status = mysql_stmt_fetch(preparedStatement)) == 0) {
+		if (return_status == 1 || return_status == MYSQL_NO_DATA) {
+			printf("No data left\n");
+			break;
+		}
+
+		if (!isNull) {
+		    printf("Found job_id: %d\n", resultId);
+		}
+	}
+
+	mysql_free_result(result); // b/c stmt_result_metadata
+
+	mysql_stmt_close(preparedStatement); // b/c stmt_init
+
+	return resultId;
 }

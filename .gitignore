@@ -8,3 +8,5 @@ build
 
 # for clangd lsp
 compile_flags.txt
+
+.DS_Store

@@ -10,21 +10,22 @@
 static MYSQL * mysql = NULL; //this var isn't visible outside file = static
 
 //0 - success, 1 - init failed, 2 - real_connect failed
-void db_open() {
+int db_open() {
 	const char *host = getenv("MYSQL_HOST");
 	const char *user = getenv("MYSQL_USER");
 	const char *password = getenv("MYSQL_PASSWORD");
 	const char *database = getenv("MYSQL_DATABASE");
 
+	printf("Connecting to database...\n");
+
 	if (mysql_library_init(0, NULL, NULL)) {
-		fprintf(stderr, "Could not initialize MySQL client library\n");
-		exit(1);
+		fprintf(stderr, "ERROR: Could not initialize MySQL client library\n");
+		return 1; //MYSQL LIBRARY ISSUE
 	}
 
 	if( (mysql = mysql_init(mysql)) == NULL) { //page 68
-		fprintf(stderr, "Could not initialize mysql object\n");
-		//return 1;
-		exit(1);
+		fprintf(stderr, "ERROR: Could not initialize mysql object\n");
+		return 2; //MYSQL OBJ ISSUE
 	}
 
 	if (!mysql_real_connect(mysql,		//mysql
@@ -37,23 +38,33 @@ void db_open() {
 			 	0) //client_flag
 	   )//page 91 - 95
 	{
-		fprintf(stderr, "Failed to connect to database: Error: %s\n", mysql_error(mysql));
+		fprintf(stderr, "ERROR: Failed to connect to database: ERR_MSG: %s\n", mysql_error(mysql));
 		printf("host: %s\n", host);
-		//return 2;
-		exit(1);
+		printf("HINT 1: check if you ran 'brew services start mysql'\n");
+		printf("HINT 2: check if you ran 'source setenv.sh' in the app directory\n");
+		return 3; //DATABASE CONNECT ISSUE
 	}
 	//return 0;
 
 	printf("Database connection established!\n");
+	return 0; //SUCCESS
 }
 
-void db_close() {
+void db_close(int status) {
+	if(status == 1) { //no library
+		printf("Closing application...\n");
+		return;
+	}
+
 	if(mysql != NULL) {
+		printf("Closing mysql object...\n");
 		mysql_close(mysql); //frees allocation of mysql pointer (from mysql_init)
 		mysql = NULL;
 	}
 
+	printf("Closing mysql library...\n");
 	mysql_library_end();
+	printf("Closing application...\n");
 }
 
 // RETURN COMPANY_ID, else -1 for ERROR
@@ -546,9 +557,8 @@ int db_select_job_id(const int jobId) {
 }
 
 //If error return -1, else return rowsAffected
-int db_delete_job_listing(const int jobId) {
+int db_delete_by_id(const char * stmt_string, const int id) {
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
-	const char * stmt_string = "DELETE FROM job_listing WHERE job_id = ?";
 	unsigned long length = strlen(stmt_string);
 	
 	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
@@ -563,7 +573,7 @@ int db_delete_job_listing(const int jobId) {
 
 	/* INTEGER PARAM */
 	bind[0].buffer_type= MYSQL_TYPE_LONG;
-	bind[0].buffer= (char *)&jobId;
+	bind[0].buffer= (char *)&id;
 	bind[0].is_null= 0;
 	bind[0].length= 0;
 

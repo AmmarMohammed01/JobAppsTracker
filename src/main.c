@@ -2,11 +2,11 @@
 #include "jobapps-cli.h" //jacli_menu, jacli_add_company
 
 int main(int argc, char *argv[]) {
-	printf("\n<<< jobapps-cli >>>\n\n");
-
-	jacli_setup();
-	jacli_menu(argc, argv);
-	jacli_close();
+	int status = jacli_setup();
+	if (status == 0) {
+		jacli_menu(argc, argv);
+	}
+	jacli_close(status);
 
 	return 0;
 }

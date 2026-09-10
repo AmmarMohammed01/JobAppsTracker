@@ -24,8 +24,8 @@ I need to write out the workflow so I can understand what need to be done:
 ```bash
 job entry add company platform title resume
 
-job entry add TheCorp ThePlat Backend Engineer ~/resume/TheResume.pdf
-job entry add TheCorp ThePlat Backend Engineer TheResume
+job entry add "TheCorp" "ThePlat" "Backend Engineer" "~/resume/TheResume.pdf"
+job entry add "TheCorp" "ThePlat" "Backend Engineer" "TheResume"
 ```
 
 ```text
@@ -129,6 +129,70 @@ Create a category entry:
 ```
 
 ### LIST COMMANDS
+Get a list of job entries
+```bash
+job entry list all
+job entry list job_id
+
+job entry list 49
+```
+
+```bash
+job entry list range
+
+job entry list "today"
+job entry list "yesterday"
+
+job entry list "2026-09-09"
+job entry list "9/9/2026" # MM/DD/YYYY, MM/DD/YY, DD/MM/YY, DD/MM/YYYY
+
+job entry list "this week" | "current week"
+job entry list "last week"
+
+job entry list "this month"
+job entry list "last month"
+
+job entry list "Jan" | "Jan." | "Jan. 2026" | "January 2026"
+
+job entry list "this year"
+job entry list "last year"
+job entry list year
+job entry list "2026"
+
+job entry list "2026-08-31 to 2026-09-09"
+
+```
+
+Get a list of resume entries
+```bash
+job resume list all
+job resume list resume_id       # get by id
+job resume list resume_name     # get by name
+
+job resume list sort interviews "high to low"
+job resume list sort interviews "low to high"
+
+job resume list sort interviews "ignored" | "no interviews" # just applied, no other status available | just applied, then rejected
+```
+
+Get a list of companies applied to
+```bash
+job company list all    # show times applied, times interviewed, times rejected
+# maybe show frequency applied, how often user applies to it
+```
+
+Get a list of platforms used:
+```bash
+job platform list all   # see how many times platform was used, how many times application made it to interview stage
+```
+
+Get a list of jobs by categories
+```bash
+job category list "marketing"
+job category list "software engineering"
+job category list "embedded engineering"
+job category list "hardware engineering"
+```
 
 ### ADDITIONAL COMMANDS
 Could consider udpate and delete commands

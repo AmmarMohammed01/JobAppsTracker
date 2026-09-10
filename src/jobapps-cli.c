@@ -17,35 +17,66 @@ static void jacli_add_platform();
 static void jacli_add_job_status();
 
 //static void jacli_info(); //relevant info
-static void jacli_list_companies();
-static void jacli_list_platforms();
+//static void jacli_list_companies(); //REPLACED by jacli_company_list_all
+//static void jacli_list_platforms(); //REPLACED by jacli_platform_list_all
 //static void jacli_list_job_listings(); // REPLACED by jacli_entry_list_all
 
-static void jacli_list_status_types(); // NOT IMPLEMENTED YET
-//static void jacli_help();
+//static void jacli_list_status_types(); // NOT IMPLEMENTED YET
+static void jacli_help();
 
 //NEW DECLARATIONS
+//JOB ENTRY
 static void jacli_entry_add(const char * company_name, const char * platform_name, const char * job_title, const char * resume_name);
 static void jacli_entry_list_all();
 static void jacli_entry_remove(const int job_id);
 //static void jacli_entry_list(); static void jacli_entry_update();
 
-void jacli_setup() {
-	db_open();
+//COMPANY
+static void jacli_company_list_all();
+
+//PLATFORM
+static void jacli_platform_list_all();
+
+//RESUME
+static void jacli_resume_list_all();
+
+//STATUS
+static void jacli_status_list_all();
+
+static void clear_screen(void) {
+	//printf("\033[2J\033[H");
+	//printf("\033[H\033[J");
+	for (int i = 0; i < 50; i++) {
+	    putchar('\n');
+	}
+	fflush(stdout);
+}
+
+int jacli_setup() {
+	printf("<<< jobapps-cli >>>\n\n");
+	int status = db_open();
+	return status;
 }
 
 void jacli_menu(int arg_count, char *arg_values[]) {
-	for(int i = 0; i < arg_count; i++) {
-		printf("Arg #%d: %s\n", i, arg_values[i]);
-	}
+	clear_screen();
+	printf("\n<<< jobapps-cli >>>\n\n");
+
+	// for(int i = 0; i < arg_count; i++) { printf("Arg #%d: %s\n", i, arg_values[i]); }
 
 	//check if there are enough arguments!
 	if (arg_count < 2) {
 		printf("Read command help\n");
+		jacli_help();
 		return;
 	}
 
-	if (strcmp(arg_values[1], "entry") == 0) {
+	if (strcmp(arg_values[1], "help") == 0) {
+		jacli_help();
+		return;
+	}
+
+	else if (strcmp(arg_values[1], "entry") == 0) {
 		if(arg_count < 3) {
 			printf("job listing options: add, list, update, remove\n");
 			return;
@@ -94,13 +125,103 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 		else if (strcmp(arg_values[2], "remove") == 0) {
 			if (arg_count == 4) {
 				int job_id = atoi(arg_values[3]);
-				// NOTE: CHECK IF NUM
-				db_delete_job_listing(job_id);
+				jacli_entry_remove(job_id);
 				return;
 			}
 			else {}
 		}
 	}
+
+	else if (strcmp(arg_values[1], "company") == 0) {
+		if (strcmp(arg_values[2], "list") == 0) {
+			if (arg_count == 4) {
+				if (strcmp(arg_values[3], "all") == 0) {
+					jacli_company_list_all();
+					return;
+				}
+				else {
+					printf("'job company list' undefined option\n");
+					return;
+				}
+			}
+		}
+	}
+
+	else if (strcmp(arg_values[1], "platform") == 0) {
+		if (strcmp(arg_values[2], "list") == 0) {
+			if (arg_count == 4) {
+				if (strcmp(arg_values[3], "all") == 0) {
+					jacli_platform_list_all();
+					return;
+				}
+				else {
+					printf("'job platform list' undefined option\n");
+					return;
+				}
+			}
+		}
+
+	}
+	else if (strcmp(arg_values[1], "resume") == 0) {
+		if (strcmp(arg_values[2], "list") == 0) {
+			if (arg_count == 4) {
+				if (strcmp(arg_values[3], "all") == 0) {
+					jacli_resume_list_all();
+					return;
+				}
+				else {
+					printf("'job resume list' undefined option\n");
+					return;
+				}
+			}
+		}
+
+	}
+	else if (strcmp(arg_values[1], "status") == 0) {
+		if (strcmp(arg_values[2], "list") == 0) {
+			if (arg_count == 4) {
+				if (strcmp(arg_values[3], "all") == 0) {
+					jacli_status_list_all();
+					return;
+				}
+				else {
+					printf("'job status list' undefined option\n");
+					return;
+				}
+			}
+		}
+
+	}
+	else {
+		printf("ERROR: Unable to interpret command\n");
+		printf("For avaiable commands please refer to 'job help'\n");
+		return;
+	}
+}
+
+static void jacli_help() {
+	printf("Current commands available:\n");
+	printf("jacli entry\n");
+	printf("\tjacli entry list all\n");
+	printf("\tjacli entry add company_name platform_name job_title resume_name\n");
+	printf("\tjacli entry remove job_id\n");
+	printf("\n");
+
+	printf("jacli company\n");
+	printf("\tjacli company list all\n");
+	printf("\n");
+
+	printf("jacli platform\n");
+	printf("\tjacli platform list all\n");
+	printf("\n");
+
+	printf("jacli resume\n");
+	printf("\tjacli resume list all\n");
+	printf("\n");
+
+	printf("jacli status\n");
+	printf("\tjacli status list all\n");
+	printf("\n");
 }
 
 static void jacli_entry_add(const char * company_name, const char * platform_name, const char * job_title, const char * resume_name) {
@@ -245,14 +366,6 @@ static void jacli_add_job_status() {
 	printf("Successfully added job status with id: %d\n", statusId);
 }
 
-static void jacli_list_companies() {
-	db_select_all("SELECT * FROM company");
-}
-
-static void jacli_list_platforms() {
-	db_select_all("SELECT * FROM platform");
-}
-
 static void jacli_entry_list_all() {
 	//print fields on top
 	//replace ids with names
@@ -271,17 +384,37 @@ static void jacli_entry_remove(const int job_id) {
 		fprintf(stderr, "Job ID %d NOT found.\n", job_id);
 		return;
 	}
+	else {
+		printf("Job ID #%d found\n", job_id);
+	}
 
 	int rows_affected;
-	if ((rows_affected = db_delete_job_listing(job_id)) == -1 ) {
+	//if ((rows_affected = db_delete_job_listing(job_id)) == -1 ) {
+	if ((rows_affected = db_delete_by_id("DELETE FROM job_listing WHERE job_id = ?", job_id)) == -1 ) {
 		printf("ERROR DELETING JOB_LISTING W/ JOB_ID: %d\n", job_id);
 		return;
 	}
 	else {
-		printf("Successfully deleted %d row(s)\n", job_id); // NOTE: I assume this will always be 1, change the (s) or this code later.
+		printf("Successfully deleted job id %d row.\n", job_id); // NOTE: I assume this will always be 1, change the (s) or this code later.
 	}
 }
 
-void jacli_close() {
-	db_close();
+static void jacli_company_list_all() {
+	db_select_all("SELECT * FROM company");
+}
+
+static void jacli_platform_list_all() {
+	db_select_all("SELECT * FROM platform");
+}
+
+static void jacli_resume_list_all() {
+	db_select_all("SELECT * FROM resume");
+}
+
+static void jacli_status_list_all() {
+	db_select_all("SELECT * FROM status");
+}
+
+void jacli_close(int status) {
+	db_close(status);
 }

@@ -2,8 +2,8 @@
 #define __JACLI_H__
 //jacli = job apps command line interface
 
-void jacli_setup();
+int jacli_setup();
 void jacli_menu(int arg_count, char *arg_values[]);
-void jacli_close();
+void jacli_close(int status);
 
 #endif

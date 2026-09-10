@@ -719,3 +719,54 @@ int db_insert_resume(const char * resumeName) {
 
 	return resumeId;
 }
+
+int db_insert_resume_full(const char * resumeName, const char * resumeLink) {
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "INSERT INTO resume (resume_name, resume_link) VALUES (?, ?);";
+	unsigned long length = strlen(stmt_string);
+	
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[2];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long resume_name_length = strlen(resumeName);
+	unsigned long resume_link_length = strlen(resumeLink); //I forgot to include this length earlier, TEST: see if a long dir link is stored. Example I tried earlier, software June 23 resume.
+	/* STRING PARAM */
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (char *)resumeName;
+	bind[0].buffer_length = 100;
+	bind[0].is_null = 0;
+	bind[0].length = &resume_name_length;
+
+	/* STRING PARAM */
+	bind[1].buffer_type = MYSQL_TYPE_STRING;
+	bind[1].buffer = (char *)resumeLink;
+	bind[1].buffer_length = 500;
+	bind[1].is_null = 0;
+	bind[1].length = &resume_link_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return -1;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	int resumeId = mysql_stmt_insert_id(stmt_handler);
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return resumeId;
+}

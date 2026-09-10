@@ -16,7 +16,8 @@ int db_insert_job_status(const int jobId, const char * status_date, const char *
 int db_select_job_id(const int jobId);
 
 int db_select_resume(const char * resumeName);
-int db_insert_resume(const char * resumeName);
+int db_insert_resume(const char * resumeName); //used when adding job listing
+int db_insert_resume_full(const char * resumeName, const char * resumeLink); //jacli_resume_add
 
 //MULTIPURPOSE
 void db_select_all(const char * stmt_string);

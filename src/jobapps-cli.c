@@ -39,6 +39,8 @@ static void jacli_platform_list_all();
 
 //RESUME
 static void jacli_resume_list_all();
+static void jacli_resume_add(const char * resume_name, const char * resume_link);
+static void jacli_resume_remove(const int resume_id);
 
 //STATUS
 static void jacli_status_list_all();
@@ -175,6 +177,16 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 				}
 			}
 		}
+		else if (strcmp(arg_values[2], "add") == 0) {
+			if (arg_count == 5) {
+				const char * resume_name = arg_values[3];
+				const char * resume_link = arg_values[4];
+				jacli_resume_add(resume_name, resume_link);
+			}
+			else {
+				fprintf(stderr, "Invalid number of arguments for 'job resume add [resume_name] [resume_link]'\n");
+			}
+		}
 
 	}
 	else if (strcmp(arg_values[1], "status") == 0) {
@@ -190,7 +202,6 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 				}
 			}
 		}
-
 	}
 	else {
 		printf("ERROR: Unable to interpret command\n");
@@ -395,7 +406,7 @@ static void jacli_entry_remove(const int job_id) {
 		return;
 	}
 	else {
-		printf("Successfully deleted job id %d row.\n", job_id); // NOTE: I assume this will always be 1, change the (s) or this code later.
+		printf("Successfully deleted job id %d row.\n", job_id);
 	}
 }
 
@@ -409,6 +420,28 @@ static void jacli_platform_list_all() {
 
 static void jacli_resume_list_all() {
 	db_select_all("SELECT * FROM resume");
+}
+
+static void jacli_resume_add(const char * resume_name, const char * resume_link) {
+	const int resume_id = db_insert_resume_full(resume_name, resume_link);
+	if(resume_id == -1) {
+		fprintf(stderr, "Error inserting resume.\n");
+		return;
+	}
+	printf("Resume added w/ id = %d\n", resume_id);
+}
+
+//TEST: test this feature w/ maybe archived resume
+static void jacli_resume_remove(const int resume_id) {
+	int rows_affected;
+	//if ((rows_affected = db_delete_job_listing(job_id)) == -1 ) {
+	if ((rows_affected = db_delete_by_id("DELETE FROM resume WHERE resume_id = ?", resume_id)) == -1 ) {
+		printf("ERROR DELETING RESUME W/ RESUME_ID: %d\n", resume_id);
+		return;
+	}
+	else {
+		printf("Successfully deleted resume id %d row.\n", resume_id);
+	}
 }
 
 static void jacli_status_list_all() {

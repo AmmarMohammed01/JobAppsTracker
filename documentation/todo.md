@@ -45,7 +45,7 @@ the company and platform tables respectively.
 A job status should be automatically created immediately with the following information:
 - status datetime = today
 - status description = "Applied"
-- job_id to target the new job_listing
+- job_id to target the new job_listing (rename to 'job' table)
 
 - A status_id is automatically generated
 ```

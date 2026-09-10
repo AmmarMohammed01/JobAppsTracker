@@ -11,17 +11,10 @@
 #include "db.h"
 
 //private declarations. file-scope.
-//static void jacli_add_job_listing(); // REPLACED by jacli_entry_add
 static void jacli_add_company();
 static void jacli_add_platform();
 static void jacli_add_job_status();
 
-//static void jacli_info(); //relevant info
-//static void jacli_list_companies(); //REPLACED by jacli_company_list_all
-//static void jacli_list_platforms(); //REPLACED by jacli_platform_list_all
-//static void jacli_list_job_listings(); // REPLACED by jacli_entry_list_all
-
-//static void jacli_list_status_types(); // NOT IMPLEMENTED YET
 static void jacli_help();
 
 //NEW DECLARATIONS
@@ -44,6 +37,11 @@ static void jacli_resume_remove(const int resume_id);
 
 //STATUS
 static void jacli_status_list_all();
+//static void jacli_status_add(const int job_id, const char * status_datetime, const char * status_description);
+
+//URL
+static void jacli_url_list_all();
+static void jacli_url_add(const int job_id, const char * website_link);
 
 static void clear_screen(void) {
 	//printf("\033[2J\033[H");
@@ -203,6 +201,28 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 			}
 		}
 	}
+	else if (strcmp(arg_values[1], "url") == 0) {
+		if (strcmp(arg_values[2], "list") == 0) {
+			if (arg_count == 4) {
+				if (strcmp(arg_values[3], "all") == 0) {
+					jacli_url_list_all();
+					return;
+				}
+				else {
+					printf("'job url list' undefined option\n");
+					return;
+				}
+			}
+		}
+		else if (strcmp(arg_values[2], "add") == 0) {
+			if (arg_count == 5) {
+				const char * job_id_str = arg_values[3];
+				const int job_id = atoi(job_id_str); // NOTE: Need to check if atoi result is an INT!
+				const char * website_link = arg_values[4];
+				jacli_url_add(job_id, website_link);
+			}
+		}
+	}
 	else {
 		printf("ERROR: Unable to interpret command\n");
 		printf("For avaiable commands please refer to 'job help'\n");
@@ -228,10 +248,16 @@ static void jacli_help() {
 
 	printf("jacli resume\n");
 	printf("\tjacli resume list all\n");
+	printf("\tjacli resume add resume_name resume_link\n");
 	printf("\n");
 
 	printf("jacli status\n");
 	printf("\tjacli status list all\n");
+	printf("\n");
+
+	printf("jacli url\n");
+	printf("\tjacli url list all\n");
+	printf("\tjacli url add job_id website_link\n");
 	printf("\n");
 }
 
@@ -387,7 +413,7 @@ static void jacli_entry_list_all() {
 	//intended output
 	//Job ID | Company Name | Platform Name | Job Title | Resume Name
 	//1      | EmbCoExample | ExaJobFinder  | Embedded Software Engineer | NULL
-	db_select_all("SELECT * FROM job_listing");
+	db_select_all("SELECT * FROM job");
 }
 
 static void jacli_entry_remove(const int job_id) {
@@ -400,9 +426,8 @@ static void jacli_entry_remove(const int job_id) {
 	}
 
 	int rows_affected;
-	//if ((rows_affected = db_delete_job_listing(job_id)) == -1 ) {
-	if ((rows_affected = db_delete_by_id("DELETE FROM job_listing WHERE job_id = ?", job_id)) == -1 ) {
-		printf("ERROR DELETING JOB_LISTING W/ JOB_ID: %d\n", job_id);
+	if ((rows_affected = db_delete_by_id("DELETE FROM job WHERE job_id = ?", job_id)) == -1 ) {
+		printf("ERROR DELETING JOB W/ JOB_ID: %d\n", job_id);
 		return;
 	}
 	else {
@@ -434,7 +459,6 @@ static void jacli_resume_add(const char * resume_name, const char * resume_link)
 //TEST: test this feature w/ maybe archived resume
 static void jacli_resume_remove(const int resume_id) {
 	int rows_affected;
-	//if ((rows_affected = db_delete_job_listing(job_id)) == -1 ) {
 	if ((rows_affected = db_delete_by_id("DELETE FROM resume WHERE resume_id = ?", resume_id)) == -1 ) {
 		printf("ERROR DELETING RESUME W/ RESUME_ID: %d\n", resume_id);
 		return;
@@ -446,6 +470,19 @@ static void jacli_resume_remove(const int resume_id) {
 
 static void jacli_status_list_all() {
 	db_select_all("SELECT * FROM status");
+}
+
+static void jacli_url_list_all() {
+	db_select_all("SELECT * FROM url");
+}
+
+static void jacli_url_add(const int job_id, const char * website_link) {
+	const int link_id = db_insert_url(job_id, website_link);
+	if(link_id == -1) {
+		fprintf(stderr, "Error inserting url.\n");
+		return;
+	}
+	printf("URL added w/ id = %d\n", link_id);
 }
 
 void jacli_close(int status) {

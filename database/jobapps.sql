@@ -21,7 +21,22 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'd841ee3a-a588-11f1-94a1-611e72e219d2:1-29';
+SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'd841ee3a-a588-11f1-94a1-611e72e219d2:1-67';
+
+--
+-- Table structure for table `category`
+--
+
+DROP TABLE IF EXISTS `category`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `category` (
+  `category_id` int NOT NULL AUTO_INCREMENT,
+  `category_name` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`category_id`),
+  UNIQUE KEY `category_name` (`category_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `company`
@@ -35,49 +50,17 @@ CREATE TABLE `company` (
   `company_name` varchar(100) NOT NULL,
   PRIMARY KEY (`company_id`),
   UNIQUE KEY `unique_company_name` (`company_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `job_category`
+-- Table structure for table `job`
 --
 
-DROP TABLE IF EXISTS `job_category`;
+DROP TABLE IF EXISTS `job`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `job_category` (
-  `category_id` int NOT NULL AUTO_INCREMENT,
-  `category_name` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`category_id`),
-  UNIQUE KEY `category_name` (`category_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `job_link`
---
-
-DROP TABLE IF EXISTS `job_link`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `job_link` (
-  `link_id` int NOT NULL AUTO_INCREMENT,
-  `job_id` int DEFAULT NULL,
-  `website_link` varchar(400) DEFAULT NULL,
-  PRIMARY KEY (`link_id`),
-  KEY `job_id` (`job_id`),
-  CONSTRAINT `job_link_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `job_listing` (`job_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `job_listing`
---
-
-DROP TABLE IF EXISTS `job_listing`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `job_listing` (
+CREATE TABLE `job` (
   `job_id` int NOT NULL AUTO_INCREMENT,
   `company_id` int DEFAULT NULL,
   `platform_id` int DEFAULT NULL,
@@ -87,28 +70,10 @@ CREATE TABLE `job_listing` (
   KEY `company_id` (`company_id`),
   KEY `platform_id` (`platform_id`),
   KEY `resume_id` (`resume_id`),
-  CONSTRAINT `job_listing_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `company` (`company_id`) ON DELETE CASCADE,
-  CONSTRAINT `job_listing_ibfk_2` FOREIGN KEY (`platform_id`) REFERENCES `platform` (`platform_id`) ON DELETE CASCADE,
-  CONSTRAINT `job_listing_ibfk_3` FOREIGN KEY (`resume_id`) REFERENCES `resume` (`resume_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `job_status`
---
-
-DROP TABLE IF EXISTS `job_status`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `job_status` (
-  `status_id` int NOT NULL AUTO_INCREMENT,
-  `job_id` int DEFAULT NULL,
-  `status_date` date NOT NULL,
-  `status_description` varchar(50) NOT NULL,
-  PRIMARY KEY (`status_id`),
-  KEY `job_id` (`job_id`),
-  CONSTRAINT `job_status_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `job_listing` (`job_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `job_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `company` (`company_id`) ON DELETE CASCADE,
+  CONSTRAINT `job_ibfk_2` FOREIGN KEY (`platform_id`) REFERENCES `platform` (`platform_id`) ON DELETE CASCADE,
+  CONSTRAINT `job_ibfk_3` FOREIGN KEY (`resume_id`) REFERENCES `resume` (`resume_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -141,7 +106,7 @@ CREATE TABLE `platform` (
   `platform_name` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`platform_id`),
   UNIQUE KEY `unique_platform_name` (`platform_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -158,7 +123,42 @@ CREATE TABLE `resume` (
   PRIMARY KEY (`resume_id`),
   UNIQUE KEY `resume_name` (`resume_name`),
   UNIQUE KEY `resume_link` (`resume_link`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `status`
+--
+
+DROP TABLE IF EXISTS `status`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `status` (
+  `status_id` int NOT NULL AUTO_INCREMENT,
+  `job_id` int DEFAULT NULL,
+  `status_datetime` datetime NOT NULL,
+  `status_description` varchar(50) NOT NULL,
+  PRIMARY KEY (`status_id`),
+  KEY `job_id` (`job_id`),
+  CONSTRAINT `status_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `job` (`job_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `url`
+--
+
+DROP TABLE IF EXISTS `url`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `url` (
+  `link_id` int NOT NULL AUTO_INCREMENT,
+  `job_id` int DEFAULT NULL,
+  `website_link` varchar(400) DEFAULT NULL,
+  PRIMARY KEY (`link_id`),
+  KEY `job_id` (`job_id`),
+  CONSTRAINT `url_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `job` (`job_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -171,4 +171,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-07 21:37:49
+-- Dump completed on 2026-09-09 21:27:19

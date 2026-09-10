@@ -3,7 +3,7 @@ MySQL Client and MySQL Database to help user keep track of the job applications.
 
 # Intended Features
 - Allow users to add job listings ( job title, company, job search platform, date )
-    - NOTE: date is not stored job_listing table, but rather stored in job_status
+    - NOTE: date is not stored job table, but rather stored in status table
 - Allow users to see how many jobs they apply to daily (on average)
 - Allow users to see how many jobs they have applied within a specified date range (important)
     - day

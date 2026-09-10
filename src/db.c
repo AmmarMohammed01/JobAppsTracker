@@ -322,7 +322,7 @@ int db_insert_platform(const char * platformName) {
 //RETURN -1 IF ERROR, ELSE RETURN NEWLY INSERTED JOBID
 int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle, const int resumeId) {
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
-	const char * stmt_string = "INSERT INTO job_listing (company_id, platform_id, job_title, resume_id) VALUES (?, ?, ?, ?);";
+	const char * stmt_string = "INSERT INTO job (company_id, platform_id, job_title, resume_id) VALUES (?, ?, ?, ?);";
 	unsigned long length = strlen(stmt_string);
 	
 	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
@@ -481,7 +481,7 @@ int db_insert_job_status(const int jobId, const char * status_datetime, const ch
 //Search if job_id exists: -1 if not found, else found
 int db_select_job_id(const int jobId) {
 	MYSQL_STMT * preparedStatement = mysql_stmt_init(mysql);
-	const char *stmt_str = "SELECT job_id FROM job_listing WHERE job_id = ?";
+	const char *stmt_str = "SELECT job_id FROM job WHERE job_id = ?";
 	unsigned long stmt_length = strlen(stmt_str); // NOTE: what is the value of the string <-- the value hasn't been prepared yet...
 
 	//prepare and bind before execution
@@ -769,4 +769,54 @@ int db_insert_resume_full(const char * resumeName, const char * resumeLink) {
 	mysql_stmt_close(stmt_handler); // b/c stmt_init
 
 	return resumeId;
+}
+
+int db_insert_url(const int jobId, const char * websiteLink) {
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "INSERT INTO url (job_id, website_link) VALUES (?, ?);";
+	unsigned long length = strlen(stmt_string);
+	
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[2];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long website_link_length = strlen(websiteLink);
+
+	/* INTEGER PARAM This is a number type, so there is no need to specify buffer_length */
+	bind[0].buffer_type= MYSQL_TYPE_LONG;
+	bind[0].buffer= (char *)&jobId;
+	bind[0].is_null= 0;
+	bind[0].length= 0;
+
+	/* STRING PARAM */
+	bind[1].buffer_type = MYSQL_TYPE_STRING;
+	bind[1].buffer = (char *)websiteLink;
+	bind[1].buffer_length = 400;
+	bind[1].is_null = 0;
+	bind[1].length = &website_link_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return -1;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	int linkId = mysql_stmt_insert_id(stmt_handler);
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return linkId;
 }

@@ -19,7 +19,7 @@ static void jacli_help();
 
 //NEW DECLARATIONS
 //JOB ENTRY
-static void jacli_entry_add(const char * company_name, const char * platform_name, const char * job_title, const char * resume_name);
+static int jacli_entry_add(const char * company_name, const char * platform_name, const char * job_title, const char * resume_name);
 static void jacli_entry_list_all();
 static void jacli_entry_remove(const int job_id);
 //static void jacli_entry_list(); static void jacli_entry_update();
@@ -78,30 +78,42 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 
 	else if (strcmp(arg_values[1], "entry") == 0) {
 		if(arg_count < 3) {
-			printf("job listing options: add, list, update, remove\n");
+			printf("job listing options: add, list, remove\n");
 			return;
 		}
 
 		if (strcmp(arg_values[2], "add") == 0) {
-			if(arg_count < 4) {
+			if(arg_count <= 3) {
 				printf("Please type the following: " \
 				"\"company name\", "\
-				"\"platform name\", "\
 				"\"job title\", "\
+				"\"website link\", "\
 				"\"resume name\""\
+				"\"status_datetime\""\
+				"\"platform name\", "\
 				"\n");
 				return;
 			}
-			else if (arg_count == 7) {
+			else if (arg_count == 9) {
 				printf("Correct # of args for 'job entry add'\n");
 				const char * company_name = arg_values[3];
-				const char * platform_name = arg_values[4];
-				const char * job_title = arg_values[5];
+				const char * job_title = arg_values[4];
+				const char * website_link = arg_values[5];
 				const char * resume_name = arg_values[6];
+				const char * status_datetime = arg_values[7];
+				const char * platform_name = arg_values[8];
 
 				printf("c: %s, p: %s, j: %s, r: %s\n", company_name, platform_name, job_title, resume_name);
 
-				jacli_entry_add(company_name, platform_name, job_title, resume_name);
+				int returned_job_id = jacli_entry_add(company_name, platform_name, job_title, resume_name);
+
+				if (returned_job_id == -1) {
+					printf("Avoiding the addition of URL and status datetime since job was not added.\n");
+					return;
+				}
+
+				jacli_url_add(returned_job_id, website_link);
+				jacli_status_add(returned_job_id, status_datetime, "Applied");
 
 				return;
 			}
@@ -247,7 +259,7 @@ static void jacli_help() {
 	printf("Current commands available:\n");
 	printf("jacli entry\n");
 	printf("\tjacli entry list all\n");
-	printf("\tjacli entry add company_name platform_name job_title resume_name\n");
+	printf("\tjacli entry add company_name job_title website_link, status_datetime, resume_name platform_name\n");
 	printf("\tjacli entry remove job_id\n");
 	printf("\n");
 
@@ -262,20 +274,23 @@ static void jacli_help() {
 	printf("jacli resume\n");
 	printf("\tjacli resume list all\n");
 	printf("\tjacli resume add resume_name resume_link\n");
+	//printf("\tjacli resume remove resume_id\n"); //TODO:
 	printf("\n");
 
 	printf("jacli status\n");
 	printf("\tjacli status list all\n");
 	printf("\tjacli status add job_id status_datetime status_description\n");
+	//printf("\tjacli status remove status_id\n"); //TODO:
 	printf("\n");
 
 	printf("jacli url\n");
 	printf("\tjacli url list all\n");
 	printf("\tjacli url add job_id website_link\n");
+	//printf("\tjacli url remove link_id\n"); //TODO:
 	printf("\n");
 }
 
-static void jacli_entry_add(const char * company_name, const char * platform_name, const char * job_title, const char * resume_name) {
+static int jacli_entry_add(const char * company_name, const char * platform_name, const char * job_title, const char * resume_name) {
 	//Search if company_name is in databse, get company_id
 	int company_id = db_select_company(company_name);
 	if (company_id == -1) {
@@ -283,7 +298,7 @@ static void jacli_entry_add(const char * company_name, const char * platform_nam
 		company_id = db_insert_company(company_name);
 		if(company_id == -1) {
 			fprintf(stderr, "Error inserting company.\n");
-			return;
+			return -1;
 		}
 	}
 	printf("Company added w/ id = %d\n", company_id);
@@ -295,7 +310,7 @@ static void jacli_entry_add(const char * company_name, const char * platform_nam
 		platform_id = db_insert_platform(platform_name);
 		if(platform_id == -1) {
 			fprintf(stderr, "Error inserting platform.\n");
-			return;
+			return -1;
 		}
 	}
 	printf("Platform added w/ id = %d\n", platform_id);
@@ -307,7 +322,7 @@ static void jacli_entry_add(const char * company_name, const char * platform_nam
 		resume_id = db_insert_resume(resume_name);
 		if(resume_id == -1) {
 			fprintf(stderr, "Error inserting resume.\n");
-			return;
+			return -1;
 		}
 	}
 	printf("Resume added w/ id = %d\n", resume_id);
@@ -316,11 +331,11 @@ static void jacli_entry_add(const char * company_name, const char * platform_nam
 	int jobId = db_insert_job_listing(company_id, platform_id, job_title, resume_id);
 	if (jobId == -1) {
 		fprintf(stderr, "Error adding job listing!\n");
-		return;
+		return -1;
 	}
 	printf("Job successfully added w/ id = %d\n", jobId);
 	// also add job_status of applied with date specified by user
-
+	return jobId;
 }
 
 static void jacli_add_company() {

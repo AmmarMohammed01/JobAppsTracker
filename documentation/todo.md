@@ -128,6 +128,8 @@ Category Examples:
 Create a category entry:
 ```
 
+## 2026-09-09
+
 ### LIST COMMANDS
 Get a list of job entries
 ```bash

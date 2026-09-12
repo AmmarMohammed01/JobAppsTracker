@@ -13,7 +13,7 @@
 //private declarations. file-scope.
 static void jacli_add_company();
 static void jacli_add_platform();
-static void jacli_add_job_status();
+//static void jacli_add_job_status(); //REPLACED BY jacli_status_add
 
 static void jacli_help();
 
@@ -37,7 +37,7 @@ static void jacli_resume_remove(const int resume_id);
 
 //STATUS
 static void jacli_status_list_all();
-//static void jacli_status_add(const int job_id, const char * status_datetime, const char * status_description);
+static void jacli_status_add(const int job_id, const char * status_datetime, const char * status_description);
 
 //URL
 static void jacli_url_list_all();
@@ -200,6 +200,19 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 				}
 			}
 		}
+		else if (strcmp(arg_values[2], "add") == 0) {
+			if (arg_count == 6) {
+				const char * job_id_str = arg_values[3];
+				const int job_id = atoi(job_id_str); // NOTE: Need to check if atoi result is an INT!
+				const char * status_datetime = arg_values[4];
+				const char * status_description = arg_values[5];
+				jacli_status_add(job_id, status_datetime, status_description);
+			}
+			else {
+				printf("'job status add' undefined format\n");
+				return;
+			}
+		}
 	}
 	else if (strcmp(arg_values[1], "url") == 0) {
 		if (strcmp(arg_values[2], "list") == 0) {
@@ -253,6 +266,7 @@ static void jacli_help() {
 
 	printf("jacli status\n");
 	printf("\tjacli status list all\n");
+	printf("\tjacli status add job_id status_datetime status_description\n");
 	printf("\n");
 
 	printf("jacli url\n");
@@ -363,46 +377,6 @@ static void jacli_add_platform() {
 
 }
 
-/*
-ADD ERROR HANDLING FOR USER INPUT:
-- job id not found (DONE)
-- invalid date (MySQL throws a Foreign Key error)
-- large description (assumption is that description is cut-off)
-
-ADD SUCCESS OUTPUT WHEN STATUS IS ADDED (DONE)
-*/
-static void jacli_add_job_status() {
-	char user_input[100]; //5ish for jobId, around 16 for datetime, 50 for status description
-	printf("Type: job_id`status_datetime`status_description:\n");
-	fgets(user_input, sizeof(user_input), stdin);
-
-	user_input[strcspn(user_input, "\r\n")] = '\0';
-
-	//Parse user input
-	const char * delimeter = "`";
-
-	char * jobId_str = strtok(user_input, delimeter);
-	char * status_datetime = strtok(NULL, delimeter);
-	char * status_description = strtok(NULL, delimeter);
-
-	const int jobId = atoi(jobId_str);
-	printf("jobId: %d\n", jobId);
-	printf("datetime: %s\n", status_datetime);
-	printf("description: %s\n", status_description);
-
-	if (db_select_job_id(jobId) == -1) {
-		fprintf(stderr, "Job ID %d NOT found.\n", jobId);
-		return;
-	}
-
-	int statusId;
-	if ( (statusId = db_insert_job_status(jobId, status_datetime, status_description)) == -1) {
-		printf("Unable to add job status!\n");
-		return;
-	}
-	printf("Successfully added job status with id: %d\n", statusId);
-}
-
 static void jacli_entry_list_all() {
 	//print fields on top
 	//replace ids with names
@@ -470,6 +444,20 @@ static void jacli_resume_remove(const int resume_id) {
 
 static void jacli_status_list_all() {
 	db_select_all("SELECT * FROM status");
+}
+
+static void jacli_status_add(const int job_id, const char * status_datetime, const char * status_description) {
+	if (db_select_job_id(job_id) == -1) {
+		fprintf(stderr, "Job ID %d NOT found.\n", job_id);
+		return;
+	}
+
+	int statusId;
+	if ( (statusId = db_insert_job_status(job_id, status_datetime, status_description)) == -1) {
+		printf("Unable to add job status!\n");
+		return;
+	}
+	printf("Successfully added job status with id: %d\n", statusId);
 }
 
 static void jacli_url_list_all() {

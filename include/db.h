@@ -26,4 +26,6 @@ void db_select_all(const char * stmt_string);
 int db_delete_by_id(const char * stmt_string, const int id);
 //int db_select_by_id(const char * stmt_string, const int id);
 
+void db_select_entries_by_date(const char * date);
+
 #endif

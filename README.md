@@ -39,7 +39,7 @@ MYSQL_DATABASE=value_here
 ```
 
 ```bash
-chmod +x run_client.bash
+chmod +x setenv.sh
 ```
 
 Run Makefile to generate code:
@@ -49,7 +49,9 @@ make # produces my_client
 ```
 
 ```bash
-./run_client.bash
+source ./setenv.sh
+# OR
+. ./setenv.sh
 ```
 
 ## For running debug
@@ -68,6 +70,5 @@ I created the databse in mysql homebrew installation.
 
 To obtain schema, I ran this command:
 ```bash
-# mysqldump -u [username] -p jobapps > jobapps.sql
 mysqldump -u [username] -p --no-data jobapps > jobapps.sql
 ```

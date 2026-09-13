@@ -820,3 +820,63 @@ int db_insert_url(const int jobId, const char * websiteLink) {
 
 	return linkId;
 }
+
+void db_select_entries_by_date(const char * date) {
+	/*
+	select job_id from status WHERE status_datetime = ?; //datetime user gives
+	^ use the job_ids to know which job entry to select
+
+	select * from job where job_id = (select job_id from status where status_datetime = ?);
+
+	select * from job where job_id = (select job_id from status where status_datetime BETWEEN '2026-08-27 00:00' AND '2026-08-27 23:59');
+	ERROR 1242 (21000): Subquery returns more than 1 row
+
+	I got it working, statement below:
+	SELECT *
+	  FROM job as J, status as S
+	 WHERE J.job_id = S.job_id AND S.status_datetime BETWEEN '? 00:00' AND '? 23:59';
+
+	SELECT J.job_id, J.company_id, J.job_title, S.status_datetime
+	  FROM job as J, status as S
+	 WHERE J.job_id = S.job_id AND S.status_datetime BETWEEN '? 00:00' AND '? 23:59';
+	*/
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "SELECT * FROM job as J, status as S WHERE J.job_id = S.job_id AND S.status_datetime BETWEEN '? 00:00' AND '? 23:59'";
+	unsigned long length = strlen(stmt_string);
+
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long datetime_str_length = strlen(date);
+
+	/* STRING PARAM */
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (char *)date;
+	bind[0].buffer_length = 400;
+	bind[0].is_null = 0;
+	bind[0].length = &datetime_str_length;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return;
+	}
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return;
+}

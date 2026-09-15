@@ -397,6 +397,13 @@ void db_select_all(const char * stmt_string) {
 
 	MYSQL_ROW row;
 	unsigned int num_fields = mysql_num_fields(result);
+	MYSQL_FIELD * fields;
+	fields = mysql_fetch_fields(result);
+
+	for (unsigned int i = 0; i < num_fields; i++) {
+		printf("%s ", fields[i].name);
+	}
+	printf("\n");
 
 	while( (row = mysql_fetch_row(result)) ) {
 		unsigned long *lengths;
@@ -414,7 +421,7 @@ void db_select_all(const char * stmt_string) {
 //return statusId
 int db_insert_job_status(const int jobId, const char * status_datetime, const char * status_description) {
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
-	const char * stmt_string = "INSERT INTO job_status (job_id, status_datetime, status_description) VALUES (?, ?, ?)";
+	const char * stmt_string = "INSERT INTO status (job_id, status_datetime, status_description) VALUES (?, ?, ?)";
 	unsigned long length = strlen(stmt_string);
 	
 	if (mysql_stmt_prepare(stmt_handler, stmt_string, length)) {

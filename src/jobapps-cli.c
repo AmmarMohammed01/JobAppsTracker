@@ -21,6 +21,7 @@ static void jacli_help();
 //JOB ENTRY
 static int jacli_entry_add(const char * company_name, const char * platform_name, const char * job_title, const char * resume_name);
 static void jacli_entry_list_all();
+static void jacli_entry_list_all_names();
 static void jacli_entry_remove(const int job_id);
 // static void jacli_entry_update();
 
@@ -133,6 +134,16 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 					return;
 				}
 			}
+			else if (arg_count == 5) {
+				if (strcmp(arg_values[3], "all") == 0) {
+					if (strcmp(arg_values[4], "names") == 0) {
+						jacli_entry_list_all_names();
+						return;
+					}
+				}
+				printf("'job entry list' undefined option\n");
+				return;
+			}
 		}
 		else if (strcmp(arg_values[2], "remove") == 0) {
 			if (arg_count == 4) {
@@ -198,6 +209,14 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 			}
 		}
 
+		else if (strcmp(arg_values[2], "remove") == 0) {
+			if (arg_count == 4) {
+				const char * resume_id_str = arg_values[3];
+				int resume_id = atoi(resume_id_str);
+				jacli_resume_remove(resume_id);
+			}
+		}
+
 	}
 	else if (strcmp(arg_values[1], "status") == 0) {
 		if (strcmp(arg_values[2], "list") == 0) {
@@ -259,6 +278,7 @@ static void jacli_help() {
 	printf("Current commands available:\n");
 	printf("jacli entry\n");
 	printf("\tjacli entry list all\n");
+	printf("\tjacli entry list all names\n");
 	printf("\tjacli entry add company_name job_title website_link, status_datetime, resume_name platform_name\n");
 	printf("\tjacli entry remove job_id\n");
 	printf("\n");
@@ -274,7 +294,7 @@ static void jacli_help() {
 	printf("jacli resume\n");
 	printf("\tjacli resume list all\n");
 	printf("\tjacli resume add resume_name resume_link\n");
-	//printf("\tjacli resume remove resume_id\n"); //TODO:
+	printf("\tjacli resume remove resume_id\n");
 	printf("\n");
 
 	printf("jacli status\n");
@@ -403,7 +423,12 @@ static void jacli_entry_list_all() {
 	//Job ID | Company Name | Platform Name | Job Title | Resume Name
 	//1      | EmbCoExample | ExaJobFinder  | Embedded Software Engineer | NULL
 
-	//char * sql_stmt = "SELECT * FROM job";
+	char * sql_stmt = "SELECT * FROM job";
+
+	db_select_all(sql_stmt);
+}
+
+static void jacli_entry_list_all_names() {
 	char * sql_stmt = "SELECT J.job_id, C.company_name, P.platform_name, J.job_title, R.resume_name " \
 			  "FROM job as J, company as C, platform as P, resume as R " \
 			  "WHERE J.company_id = C.company_id AND J.platform_id = P.platform_id AND J.resume_id = R.resume_id";

@@ -429,9 +429,13 @@ static void jacli_entry_list_all() {
 }
 
 static void jacli_entry_list_all_names() {
-	char * sql_stmt = "SELECT J.job_id, C.company_name, P.platform_name, J.job_title, R.resume_name " \
-			  "FROM job as J, company as C, platform as P, resume as R " \
-			  "WHERE J.company_id = C.company_id AND J.platform_id = P.platform_id AND J.resume_id = R.resume_id";
+	char * sql_stmt = "SELECT J.job_id, C.company_name, J.job_title, S.status_description, R.resume_name, P.platform_name " \
+			   "FROM job as J, company as C, platform as P, resume as R, ( "\
+				"SELECT S.job_id, S.status_description " \
+				"FROM status as S, (select job_id, MAX(status_datetime) as latest_datetime from status GROUP BY job_id) as D "\
+				"WHERE S.job_id = D.job_id AND S.status_datetime = D.latest_datetime " \
+			   ") as S "\
+			   "WHERE J.company_id = C.company_id AND J.platform_id = P.platform_id AND J.resume_id = R.resume_id AND J.job_id = S.job_id";
 
 	db_select_all(sql_stmt);
 }

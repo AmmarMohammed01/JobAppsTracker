@@ -39,6 +39,7 @@ static void jacli_resume_remove(const int resume_id);
 //STATUS
 static void jacli_status_list_all();
 static void jacli_status_add(const int job_id, const char * status_datetime, const char * status_description);
+static void jacli_status_list_by_job_id(const int job_id);
 
 //URL
 static void jacli_url_list_all();
@@ -226,9 +227,16 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 					return;
 				}
 				else {
-					printf("'job status list' undefined option\n");
+					// TODO: Test if the fourth argument is an integer
+					const char * job_id_str = arg_values[3];
+					const int job_id = atoi(job_id_str);
+					jacli_status_list_by_job_id(job_id);
 					return;
 				}
+			}
+			else {
+				printf("'job status list' undefined option\n");
+				return;
 			}
 		}
 		else if (strcmp(arg_values[2], "add") == 0) {
@@ -299,6 +307,7 @@ static void jacli_help() {
 
 	printf("jacli status\n");
 	printf("\tjacli status list all\n");
+	printf("\tjacli status list job_id\n");
 	printf("\tjacli status add job_id status_datetime status_description\n");
 	//printf("\tjacli status remove status_id\n"); //TODO:
 	printf("\n");
@@ -508,6 +517,28 @@ static void jacli_status_add(const int job_id, const char * status_datetime, con
 		return;
 	}
 	printf("Successfully added job status with id: %d\n", statusId);
+}
+
+static void jacli_status_list_by_job_id(const int job_id) {
+	//select * from status where job_id = 10 ORDER BY status_datetime;
+	db_select_status_by_job_id(job_id);
+
+	/* CURRENT OUTPUT
+	Fetching results ...
+	 row 1
+	 status_id (integer) :  13(4)
+	 job_id (integer) :  10(4)
+	 status_datetime (datetime) :  2026-09-11 14:11:00(19)
+	 status_description (string):  Applied(7)
+
+	 row 2
+	 status_id (integer) :  12(4)
+	 job_id (integer) :  10(4)
+	 status_datetime (datetime) :  2026-09-15 14:35:00(19)
+	 status_description (string):  Rejected(8)
+
+	 total rows fetched: 2
+	*/
 }
 
 static void jacli_url_list_all() {

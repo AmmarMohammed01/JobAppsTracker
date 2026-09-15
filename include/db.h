@@ -12,6 +12,7 @@ int db_insert_platform(const char * platformName);
 
 int db_insert_job_listing(const int companyId, const int platformId, const char * jobTitle, const int resumeId);
 int db_insert_job_status(const int jobId, const char * status_date, const char * status_description);
+void db_select_status_by_job_id(const int job_id);
 
 int db_select_job_id(const int jobId);
 

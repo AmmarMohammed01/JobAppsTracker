@@ -21,7 +21,7 @@ SET @@SESSION.SQL_LOG_BIN= 0;
 -- GTID state at the beginning of the backup 
 --
 
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'd841ee3a-a588-11f1-94a1-611e72e219d2:1-67';
+SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ 'd841ee3a-a588-11f1-94a1-611e72e219d2:1-95';
 
 --
 -- Table structure for table `category`
@@ -50,7 +50,7 @@ CREATE TABLE `company` (
   `company_name` varchar(100) NOT NULL,
   PRIMARY KEY (`company_id`),
   UNIQUE KEY `unique_company_name` (`company_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -67,13 +67,13 @@ CREATE TABLE `job` (
   `job_title` varchar(100) NOT NULL,
   `resume_id` int DEFAULT NULL,
   PRIMARY KEY (`job_id`),
-  KEY `company_id` (`company_id`),
-  KEY `platform_id` (`platform_id`),
-  KEY `resume_id` (`resume_id`),
-  CONSTRAINT `job_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `company` (`company_id`) ON DELETE CASCADE,
-  CONSTRAINT `job_ibfk_2` FOREIGN KEY (`platform_id`) REFERENCES `platform` (`platform_id`) ON DELETE CASCADE,
-  CONSTRAINT `job_ibfk_3` FOREIGN KEY (`resume_id`) REFERENCES `resume` (`resume_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `job_ibfk_1` (`company_id`),
+  KEY `job_ibfk_2` (`platform_id`),
+  KEY `job_ibfk_3` (`resume_id`),
+  CONSTRAINT `job_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `company` (`company_id`) ON DELETE SET NULL,
+  CONSTRAINT `job_ibfk_2` FOREIGN KEY (`platform_id`) REFERENCES `platform` (`platform_id`) ON DELETE SET NULL,
+  CONSTRAINT `job_ibfk_3` FOREIGN KEY (`resume_id`) REFERENCES `resume` (`resume_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -123,7 +123,7 @@ CREATE TABLE `resume` (
   PRIMARY KEY (`resume_id`),
   UNIQUE KEY `resume_name` (`resume_name`),
   UNIQUE KEY `resume_link` (`resume_link`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -141,7 +141,7 @@ CREATE TABLE `status` (
   PRIMARY KEY (`status_id`),
   KEY `job_id` (`job_id`),
   CONSTRAINT `status_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `job` (`job_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -158,7 +158,7 @@ CREATE TABLE `url` (
   PRIMARY KEY (`link_id`),
   KEY `job_id` (`job_id`),
   CONSTRAINT `url_ibfk_1` FOREIGN KEY (`job_id`) REFERENCES `job` (`job_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -171,4 +171,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-09 21:27:19
+-- Dump completed on 2026-09-15 17:23:21

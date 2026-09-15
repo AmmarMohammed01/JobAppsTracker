@@ -1007,3 +1007,141 @@ void db_select_entries_by_date(const char * date) {
 
 	return;
 }
+
+void db_select_status_by_job_id(const int job_id) {
+	//TODO: NEED TO HANDLE SCENARIO WHERE JOB_ID IS NOT FOUND IN STATUS TABLE
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "select * from status where job_id = ? ORDER BY status_datetime";
+	unsigned long stmt_length = strlen(stmt_string);
+
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, stmt_length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return;
+	}
+
+	MYSQL_BIND bind[1];
+	memset(bind, 0, sizeof(bind));
+
+	/* INTEGER PARAM */
+	bind[0].buffer_type= MYSQL_TYPE_LONG;
+	bind[0].buffer= (char *)&job_id;
+	bind[0].is_null= 0;
+	bind[0].length= 0;
+
+	if ( mysql_stmt_bind_param(stmt_handler, bind) ) {
+		fprintf(stderr, "BINDING FAILED. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		return;
+	}
+
+	if( (mysql_stmt_execute(stmt_handler)) ) {
+		fprintf(stderr, "Error in statement execution. ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return;
+	}
+
+	MYSQL_RES * result = mysql_stmt_result_metadata(stmt_handler); //for SELECT
+
+	MYSQL_BIND bindResult[4];
+	memset(bindResult, 0, sizeof(bindResult));
+
+	int status_id;
+	int job_id_result;
+	char datetime[20];
+	char description[50];
+	bool is_null[4];
+	unsigned long length[4];
+
+	/* INTEGER PARAM */
+	bindResult[0].buffer_type= MYSQL_TYPE_LONG;
+	bindResult[0].buffer= (char *)&status_id;
+	bindResult[0].is_null= &is_null[0];
+	bindResult[0].length= &length[0];
+
+	/* INTEGER PARAM */
+	bindResult[1].buffer_type= MYSQL_TYPE_LONG;
+	bindResult[1].buffer= (char *)&job_id_result;
+	bindResult[1].is_null= &is_null[1];
+	bindResult[1].length= &length[1];
+
+	bindResult[2].buffer_type= MYSQL_TYPE_STRING;
+	bindResult[2].buffer= (char *)datetime;
+	bindResult[2].buffer_length = 20;
+	bindResult[2].is_null= &is_null[2];
+	bindResult[2].length= &length[2];
+
+	bindResult[3].buffer_type= MYSQL_TYPE_STRING;
+	bindResult[3].buffer= (char *)description;
+	bindResult[3].buffer_length = 50;
+	bindResult[3].is_null= &is_null[3];
+	bindResult[3].length= &length[3];
+
+	if( mysql_stmt_bind_result(stmt_handler, bindResult) != 0) {
+		fprintf(stderr, "Result bind failed: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return;
+	}
+
+	//page 150
+	/* Now buffer all results to client (optional step) */
+	if (mysql_stmt_store_result(stmt_handler))
+	{
+		fprintf(stderr, " mysql_stmt_store_result() failed\n");
+		fprintf(stderr, " %s\n", mysql_stmt_error(stmt_handler));
+		return; //exit(0);
+	}
+
+	/* Fetch all rows */
+	int row_count= 0;
+
+	fprintf(stdout, "Fetching results ...\n");
+	while (!mysql_stmt_fetch(stmt_handler))
+	{
+		row_count++;
+		fprintf(stdout, " row %d\n", row_count);
+		/* column 1 */
+		fprintf(stdout, " status_id (integer) : ");
+		if (is_null[0])
+			fprintf(stdout, " NULL\n");
+		else
+			fprintf(stdout, " %d(%ld)\n", status_id, length[0]);
+		/* column 2 */
+		fprintf(stdout, " job_id (integer) : ");
+		if (is_null[1])
+			fprintf(stdout, " NULL\n");
+		else
+			fprintf(stdout, " %d(%ld)\n", job_id_result, length[1]);
+		/* column 3 */
+		fprintf(stdout, " status_datetime (datetime) : ");
+		if (is_null[2])
+			fprintf(stdout, " NULL\n");
+		else
+			fprintf(stdout, " %s(%ld)\n", datetime, length[2]);
+		/* column 4 */
+		fprintf(stdout, " status_description (string): ");
+		if (is_null[3])
+			fprintf(stdout, " NULL\n");
+		else
+			fprintf(stdout, " %s(%ld)\n", description, length[3]);
+		fprintf(stdout, "\n");
+	}
+
+	/* Validate rows fetched */
+	fprintf(stdout, " total rows fetched: %d\n", row_count);
+	if (row_count != 2)
+	{
+		fprintf(stderr, " MySQL failed to return all rows\n");
+		exit(0);
+	}
+
+	/* Free the prepared result metadata */
+	mysql_free_result(result);
+
+	mysql_stmt_close(stmt_handler); // b/c stmt_init
+
+	return;
+}

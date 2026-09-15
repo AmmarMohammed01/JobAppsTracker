@@ -21,7 +21,6 @@ static void jacli_help();
 //JOB ENTRY
 static int jacli_entry_add(const char * company_name, const char * platform_name, const char * job_title, const char * resume_name);
 static void jacli_entry_list_all();
-static void jacli_entry_list_all_info();
 static void jacli_entry_remove(const int job_id);
 // static void jacli_entry_update();
 
@@ -126,8 +125,7 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 		else if (strcmp(arg_values[2], "list") == 0) {
 			if (arg_count == 4) {
 				if (strcmp(arg_values[3], "all") == 0) {
-					//jacli_entry_list_all();
-					jacli_entry_list_all_info();
+					jacli_entry_list_all();
 					return;
 				}
 				else {
@@ -404,22 +402,12 @@ static void jacli_entry_list_all() {
 	//intended output
 	//Job ID | Company Name | Platform Name | Job Title | Resume Name
 	//1      | EmbCoExample | ExaJobFinder  | Embedded Software Engineer | NULL
-	db_select_all("SELECT * FROM job");
-}
 
-static void jacli_entry_list_all_info() {
-	//print fields on top
-	//replace ids with names
-
-	//current output
-	//[1] [4] [1] [Embedded Software Engineer] []
-
-	//intended output
-	//Job ID | Company Name | Platform Name | Job Title | Resume Name
-	//1      | EmbCoExample | ExaJobFinder  | Embedded Software Engineer | NULL
+	//char * sql_stmt = "SELECT * FROM job";
 	char * sql_stmt = "SELECT J.job_id, C.company_name, P.platform_name, J.job_title, R.resume_name " \
 			  "FROM job as J, company as C, platform as P, resume as R " \
 			  "WHERE J.company_id = C.company_id AND J.platform_id = P.platform_id AND J.resume_id = R.resume_id";
+
 	db_select_all(sql_stmt);
 }
 

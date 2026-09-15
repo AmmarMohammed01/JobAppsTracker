@@ -385,17 +385,19 @@ int db_insert_job_listing(const int companyId, const int platformId, const char 
 	return jobId;
 }
 
-void db_select_all(const char * stmt_string) {
+/*
+void db_select_all_old(const char * stmt_string) {
+	// EXECUTE STATEMENT
 	unsigned long length = strlen(stmt_string);
-
 	if(mysql_query(mysql, stmt_string)) { //0 success
 		fprintf(stderr, "Error occured executing query. ERR_MSG %s\n", mysql_error(mysql));
 		return;
 	}
 
+	// STORE RESULT
 	MYSQL_RES * result = mysql_store_result(mysql);
 
-	MYSQL_ROW row;
+	// PRINT FIELD NAMES
 	unsigned int num_fields = mysql_num_fields(result);
 	MYSQL_FIELD * fields;
 	fields = mysql_fetch_fields(result);
@@ -405,6 +407,8 @@ void db_select_all(const char * stmt_string) {
 	}
 	printf("\n");
 
+	// PRINT ROW VALUES
+	MYSQL_ROW row;
 	while( (row = mysql_fetch_row(result)) ) {
 		unsigned long *lengths;
 		lengths = mysql_fetch_lengths(result);
@@ -416,6 +420,122 @@ void db_select_all(const char * stmt_string) {
 	}
 
 	mysql_free_result(result);
+}
+*/
+
+void db_select_all(const char *stmt_string)
+{
+	// EXECUTE STATEMENT
+    if (mysql_query(mysql, stmt_string) != 0) {
+        fprintf(stderr, "Query error: %s\n", mysql_error(mysql));
+        return;
+    }
+
+	// STORE RESULT
+    MYSQL_RES *result = mysql_store_result(mysql);
+
+    if (result == NULL) {
+        fprintf(stderr, "Result error: %s\n", mysql_error(mysql));
+        return;
+    }
+
+    unsigned int num_fields = mysql_num_fields(result);
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+    my_ulonglong num_rows = mysql_num_rows(result);
+
+    size_t *widths = calloc(num_fields, sizeof(size_t));
+
+    if (widths == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        mysql_free_result(result);
+        return;
+    }
+
+    /* Start with the width of each column name. */
+    for (unsigned int i = 0; i < num_fields; i++) {
+        widths[i] = strlen(fields[i].name);
+    }
+
+    /*
+     * First pass: find the widest value in every column.
+     */
+    MYSQL_ROW row;
+
+    while ((row = mysql_fetch_row(result)) != NULL) {
+        unsigned long *lengths = mysql_fetch_lengths(result);
+
+        for (unsigned int i = 0; i < num_fields; i++) {
+            size_t length;
+
+            if (row[i] != NULL) {
+                length = lengths[i];
+            } else {
+                length = strlen("NULL");
+            }
+
+            if (length > widths[i]) {
+                widths[i] = length;
+            }
+        }
+    }
+
+    /* Reset the result cursor for the second pass. */
+    mysql_data_seek(result, 0);
+
+    /* Print top separator. */
+    printf("+");
+    for (unsigned int i = 0; i < num_fields; i++) {
+        printf("-%-*s-+", (int) widths[i], "");
+    }
+    printf("\n");
+
+    /* Print column names. */
+    printf("|");
+    for (unsigned int i = 0; i < num_fields; i++) {
+        printf(" %-*s |",
+               (int) widths[i],
+               fields[i].name);
+    }
+    printf("\n");
+
+    /* Print separator. */
+    printf("+");
+    for (unsigned int i = 0; i < num_fields; i++) {
+        printf("-%-*s-+", (int) widths[i], "");
+    }
+    printf("\n");
+
+    /* Second pass: print the rows. */
+    while ((row = mysql_fetch_row(result)) != NULL) {
+        unsigned long *lengths = mysql_fetch_lengths(result);
+
+        printf("|");
+
+        for (unsigned int i = 0; i < num_fields; i++) {
+            if (row[i] != NULL) {
+                printf(" %-*.*s |",
+                       (int) widths[i],
+                       (int) lengths[i],
+                       row[i]);
+            } else {
+                printf(" %-*s |",
+                       (int) widths[i],
+                       "NULL");
+            }
+        }
+
+        printf("\n");
+    }
+
+    /* Print bottom separator. */
+    printf("+");
+    for (unsigned int i = 0; i < num_fields; i++) {
+        printf("-%-*s-+", (int) widths[i], "");
+    }
+    printf("\n");
+
+    free(widths);
+    mysql_free_result(result);
 }
 
 //return statusId

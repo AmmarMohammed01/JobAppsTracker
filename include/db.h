@@ -21,6 +21,7 @@ int db_insert_resume(const char * resumeName); //used when adding job listing
 int db_insert_resume_full(const char * resumeName, const char * resumeLink); //jacli_resume_add
 
 int db_insert_url(const int jobId, const char * websiteLink);
+void db_select_url_by_job_id(const int job_id);
 
 //MULTIPURPOSE
 void db_select_all(const char * stmt_string);

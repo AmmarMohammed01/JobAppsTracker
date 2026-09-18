@@ -44,6 +44,7 @@ static void jacli_status_list_by_job_id(const int job_id);
 //URL
 static void jacli_url_list_all();
 static void jacli_url_add(const int job_id, const char * website_link);
+static void jacli_url_list_by_job_id(const int job_id);
 
 static void clear_screen(void) {
 	//printf("\033[2J\033[H");
@@ -101,8 +102,8 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 				const char * company_name = arg_values[3];
 				const char * job_title = arg_values[4];
 				const char * website_link = arg_values[5];
-				const char * resume_name = arg_values[6];
-				const char * status_datetime = arg_values[7];
+				const char * status_datetime = arg_values[6];
+				const char * resume_name = arg_values[7];
 				const char * platform_name = arg_values[8];
 
 				printf("c: %s, p: %s, j: %s, r: %s\n", company_name, platform_name, job_title, resume_name);
@@ -261,9 +262,16 @@ void jacli_menu(int arg_count, char *arg_values[]) {
 					return;
 				}
 				else {
-					printf("'job url list' undefined option\n");
+					// TODO: Test if the fourth argument is an integer
+					const char * job_id_str = arg_values[3];
+					const int job_id = atoi(job_id_str);
+					jacli_url_list_by_job_id(job_id);
 					return;
 				}
+			}
+			else {
+				printf("'job url list' undefined option\n");
+				return;
 			}
 		}
 		else if (strcmp(arg_values[2], "add") == 0) {
@@ -287,7 +295,7 @@ static void jacli_help() {
 	printf("jacli entry\n");
 	printf("\tjacli entry list all\n");
 	printf("\tjacli entry list all names\n");
-	printf("\tjacli entry add company_name job_title website_link, status_datetime, resume_name platform_name\n");
+	printf("\tjacli entry add company_name job_title website_link status_datetime resume_name platform_name\n");
 	printf("\tjacli entry remove job_id\n");
 	printf("\n");
 
@@ -315,6 +323,7 @@ static void jacli_help() {
 	printf("jacli url\n");
 	printf("\tjacli url list all\n");
 	printf("\tjacli url add job_id website_link\n");
+	printf("\tjacli url list job_id\n");
 	//printf("\tjacli url remove link_id\n"); //TODO:
 	printf("\n");
 }
@@ -552,6 +561,10 @@ static void jacli_url_add(const int job_id, const char * website_link) {
 		return;
 	}
 	printf("URL added w/ id = %d\n", link_id);
+}
+
+static void jacli_url_list_by_job_id(const int job_id) {
+	db_select_url_by_job_id(job_id);
 }
 
 void jacli_close(int status) {

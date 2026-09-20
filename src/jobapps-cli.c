@@ -40,6 +40,7 @@ static void jacli_resume_remove(const int resume_id);
 static void jacli_status_list_all();
 static void jacli_status_add(const int job_id, const char * status_datetime, const char * status_description);
 static void jacli_status_list_by_job_id(const int job_id);
+static void jacli_status_count(const char * status_datetime, const char * status_description);
 
 //URL
 static void jacli_url_list_all();
@@ -317,6 +318,7 @@ static void jacli_help() {
 	printf("\tjacli status list all\n");
 	printf("\tjacli status list job_id\n");
 	printf("\tjacli status add job_id status_datetime status_description\n");
+	printf("\tjacli status count status_datetime status_description\n"); //TODO: Need to finish implementing code in db.c!!!
 	//printf("\tjacli status remove status_id\n"); //TODO:
 	printf("\n");
 
@@ -569,4 +571,9 @@ static void jacli_url_list_by_job_id(const int job_id) {
 
 void jacli_close(int status) {
 	db_close(status);
+}
+
+static void jacli_status_count(const char * status_datetime, const char * status_description) {
+	//select count(status_datetime) from status where status_datetime BETWEEN '2026-09-15 00:00' AND '2026-09-15 23:59' AND status_description = 'Applied'
+	db_select_status_count(status_datetime, status_description);
 }

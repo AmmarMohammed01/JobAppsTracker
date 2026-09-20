@@ -1270,3 +1270,24 @@ void db_select_url_by_job_id(const int job_id) {
 
 	return;
 }
+
+// WORK IN PROGRESS
+int db_select_status_count(const char * status_datetime, const char * status_description) {
+	//select count(status_datetime) from status where status_datetime BETWEEN '2026-09-15 00:00' AND '2026-09-15 23:59' AND status_description = 'Applied'
+	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
+	const char * stmt_string = "select count(status_datetime) from status where status_datetime BETWEEN '? 00:00' AND '? 23:59' AND status_description = '?'";
+	unsigned long stmt_length = strlen(stmt_string);
+
+	if (mysql_stmt_prepare(stmt_handler, stmt_string, stmt_length)) {
+		fprintf(stderr, "Error in preparing statement! ERR_MSG: %s\n", mysql_stmt_error(stmt_handler));
+		mysql_stmt_close(stmt_handler);
+		mysql_close(mysql);
+		return -1;
+	}
+
+	MYSQL_BIND bind[3];
+	memset(bind, 0, sizeof(bind));
+
+	//3 string params
+	//TODO: CODE GOES HERE!!!
+}

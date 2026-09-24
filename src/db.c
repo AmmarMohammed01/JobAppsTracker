@@ -513,10 +513,20 @@ void db_select_all(const char *stmt_string)
 
         for (unsigned int i = 0; i < num_fields; i++) {
             if (row[i] != NULL) {
-                printf(" %-*.*s |",
+		if (strcmp(row[i], "Applied") == 0) {
+			printf("\033[32m");
+		}
+		else if (strcmp(row[i], "Rejected") == 0) {
+			printf("\033[31m");
+		}
+		else if (strcmp(row[i], "Interview") == 0) {
+			printf("\033[33m");
+		}
+                printf(" %-*.*s ",
                        (int) widths[i],
                        (int) lengths[i],
                        row[i]);
+		printf("\033[0m|");
             } else {
                 printf(" %-*s |",
                        (int) widths[i],
@@ -1272,6 +1282,7 @@ void db_select_url_by_job_id(const int job_id) {
 }
 
 // WORK IN PROGRESS
+/*
 int db_select_status_count(const char * status_datetime, const char * status_description) {
 	//select count(status_datetime) from status where status_datetime BETWEEN '2026-09-15 00:00' AND '2026-09-15 23:59' AND status_description = 'Applied'
 	MYSQL_STMT * stmt_handler = mysql_stmt_init(mysql);
@@ -1291,3 +1302,4 @@ int db_select_status_count(const char * status_datetime, const char * status_des
 	//3 string params
 	//TODO: CODE GOES HERE!!!
 }
+*/
